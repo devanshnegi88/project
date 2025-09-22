@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+ <title>Smart Study Planner</title>
+
+
+ <style>
+  /* Global */
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-image: url("progress.png");
+    transition: margin-left 0.4s ease-in-out;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  /* Navbar */
+  .navbar {
+    background: linear-gradient(90deg, #2563EB, #1D4ED8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+
+  /* 🔹 Common Button Style (Menu, Close, Logout) */
+  /* OLD STYLE (commented out) */
+  /*
+  .action-btn {
+    background: #111827;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  .action-btn:hover {
+    background: #e63946;
+  }
+  */
+
+  /* NEW Stylish Button */
+  .action-btn {
+    background: linear-gradient(135deg, #2563EB, #1E40AF);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+  .action-btn:hover {
+    background: linear-gradient(135deg, #1E40AF, #1D4ED8);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+  }
+  .action-btn:active {
+    transform: scale(0.97);
+  }
+
+  /* Sidebar */
+  .slider {
+    width: 240px;
+    height: 100vh;
+    background: linear-gradient(180deg, #2563EB, #1E3A8A);
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-240px);
+    transition: transform 0.4s ease-in-out;
+    color: white;
+    padding: 60px 20px 20px; /* space for navbar */
+    box-sizing: border-box;
+    z-index: 999;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.2);
+  }
+  body.open .slider {
+    transform: translateX(0);
+  }
+
+  /* Sidebar Close Btn */
+  .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+  }
+
+  /* Sidebar Menu */
+  .slider h2 {
+    margin: 0 0 15px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .menu button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    background: white;
+    color: #2563EB;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .menu button:hover {
+    background: #1E3A8A;
+    color: white;
+    transform: translateX(6px);
+  }
+
+  /* Content */
+  .content {
+    padding: 90px 20px 20px; /* push below navbar */
+    transition: margin-left 0.4s ease-in-out;
+  }
+  body.open .content {
+    margin-left: 240px;
+  }
+
+  /* Mode toggle */
+  /* OLD STYLE (commented out) */
+  /*
+  .mode-toggle button {
+    padding: 10px 18px;
+    margin: 6px;
+    border: none;
+    background: #2563EB;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  .mode-toggle button:hover {
+    background: #1D4ED8;
+    transform: scale(1.05);
+  }
+  */
+
+  /* NEW Stylish Mode Toggle */
+  .mode-toggle button {
+    padding: 10px 20px;
+    margin: 6px;
+    border: none;
+    background: linear-gradient(135deg, #34d399, #059669);
+    color: white;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+  .mode-toggle button:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-2px) scale(1.05);
+  }
+  .mode-toggle button:active {
+    transform: scale(0.95);
+  }
+
+  /* Task Inputs */
+  .task-inputs {
+    display: none;
+    text-align: center;
+    margin: 20px 0;
+  }
+  .task-inputs input, .task-inputs select {
+    padding: 8px;
+    margin: 6px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .task-inputs button {
+    padding: 8px 16px;
+    margin: 6px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  }
+  .task-inputs button:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-2px) scale(1.05);
+  }
+  .task-inputs button:active {
+    transform: scale(0.95);
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+  }
+  th {
+    background: #2563EB;
+    color: white;
+  }
+  tr:nth-child(even) {
+    background: #f9fafb;
+  }
+
+ </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="slidbtn">
+      <button id="slider-btn" onclick="slidbar()" class="action-btn">☰</button>
+    </div>
+    <h1>📘 Smart Study Planner</h1>
+    <a href="logout.html" class="action-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+  </nav>
+
+  Sidebar
+   <div class="slider" id="slider">
+    <button class="action-btn close-btn" onclick="slidbar()">✖</button>
+    <h2>Menu</h2>
+    <!-- <div class="menu">
+      <button onclick="location.href='#'">Home</button>
+      <button onclick="location.href='#'">About</button>
+      <button onclick="location.href='#'">Contact</button>
+      <button onclick="location.href='#'">AI Chatbot</button>
+      <button onclick="location.href='#'">AI Quizzes</button>
+      <button onclick="location.href='#'">Notes Summariser</button>
+      <button onclick="location.href='#'">Reminder</button>
+      <button onclick="location.href='#'">Progress</button>
+    </div> -->
+  </div>
+
+
+
+  <div class="slider" id="slider">
+  <h2>Menu</h2>
+  <div class="menu">
+    <button onclick="window.location.href='/'">Home</button><br>
+    <button onclick="window.location.href='/dashboard/dashboard'">Dashboard</button><br>
+    <button onclick="window.location.href='/planner/planner'">Planner</button><br>
+    <button onclick="window.location.href='/chatbot/'">AI Chatbot</button><br>
+    <button onclick="window.location.href='quizzes.html'">AI Quizzes</button><br>
+    <button onclick="window.location.href='notesummariser.html'">Notes Summariser</button><br>
+    <button onclick="window.location.href='/reminder/reminder'">Reminder</button><br>
+    <button onclick="window.location.href='progress.html'">Progress</button><br>
+  </div>
+</div>
+
+
+  <!-- Main Content -->
+  <div class="content">
+    <div class="mode-toggle">
+      <button onclick="switchMode('manual')">Manual Mode</button>
+      <button onclick="switchMode('ai')">AI Mode</button>
+    </div>
+
+    <!-- Manual Mode -->
+    <div id="manualSection" class="task-inputs">
+      <select id="daySelect">
+        <option>Monday</option>
+        <option>Tuesday</option>
+        <option>Wednesday</option>
+        <option>Thursday</option>
+        <option>Friday</option>
+        <option>Saturday</option>
+        <option>Sunday</option>
+      </select>
+      <input type="text" id="taskInput" placeholder="Enter task">
+      <button onclick="addTask()">Add Task</button>
+      <button onclick="saveManualSchedule()">Save Manual Schedule</button>
+      <button onclick="clearManualSchedule()">Clear Schedule</button>
+    </div>
+
+    <!-- AI Mode -->
+    <div id="aiSection" class="task-inputs">
+      <input type="text" id="subjectsInput" placeholder="Enter subjects (comma separated)">
+      <input type="number" id="timeInput" placeholder="Hours per day">
+      <button onclick="generateAISchedule()">Generate AI Schedule</button>
+    </div>
+
+    <!-- Planner Table -->
+    <table id="plannerTable">
+      <thead>
+        <tr><th>Day</th><th>Tasks</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Monday</td><td>No tasks</td></tr>
+        <tr><td>Tuesday</td><td>No tasks</td></tr>
+        <tr><td>Wednesday</td><td>No tasks</td></tr>
+        <tr><td>Thursday</td><td>No tasks</td></tr>
+        <tr><td>Friday</td><td>No tasks</td></tr>
+        <tr><td>Saturday</td><td>No tasks</td></tr>
+        <tr><td>Sunday</td><td>No tasks</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- JS -->
+  <script>
+    function slidbar() {
+      document.body.classList.toggle("open");
+      const sliderBtn = document.getElementById("slider-btn");
+      sliderBtn.textContent = document.body.classList.contains("open") ? "✖" : "☰";
+    }
+
+    // Planner Logic
+    let manualMode = false;
+
+    function switchMode(mode) {
+      manualMode = (mode === "manual");
+      document.getElementById("manualSection").style.display = manualMode ? "block" : "none";
+      document.getElementById("aiSection").style.display = manualMode ? "none" : "block";
+      if (manualMode) loadManualSchedule();
+      else resetTable();
+    }
+
+    function addTask() {
+      if (!manualMode) return;
+      let day = document.getElementById("daySelect").value;
+      let task = document.getElementById("taskInput").value.trim();
+      if (!task) { alert("Please enter a task!"); return; }
+      let rows = document.querySelectorAll("#plannerTable tbody tr");
+      rows.forEach(row => {
+        if (row.cells[0].innerText === day) {
+          row.cells[1].innerText = (row.cells[1].innerText === "No tasks") ? task : row.cells[1].innerText + ", " + task;
+        }
+      });
+      document.getElementById("taskInput").value = "";
+    }
+
+    async function saveManualSchedule() {
+      let rows = document.querySelectorAll("#plannerTable tbody tr");
+      let schedule = {};
+      rows.forEach(row => {
+        let day = row.cells[0].innerText;
+        let tasks = row.cells[1].innerText;
+        schedule[day] = (tasks === "No tasks") ? [] : tasks.split(", ");
+      });
+      let res = await fetch("/save_manual_schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schedule })
+      });
+      if (res.ok) alert("✅ Manual schedule saved!");
+      else alert("❌ Error saving schedule.");
+    }
+
+    async function loadManualSchedule() {
+      let res = await fetch("/get_manual_schedule");
+      if (!res.ok) return;
+      let data = await res.json();
+      resetTable();
+      let rows = document.querySelectorAll("#plannerTable tbody tr");
+      rows.forEach(row => {
+        let day = row.cells[0].innerText;
+        if (data[day] && data[day].length > 0) {
+          row.cells[1].innerText = data[day].join(", ");
+        }
+      });
+    }
+
+    async function clearManualSchedule() {
+      resetTable();
+      await fetch("/clear_manual_schedule", { method: "POST" });
+      alert("🗑 Manual schedule cleared!");
+    }
+
+    function resetTable() {
+      let rows = document.querySelectorAll("#plannerTable tbody tr");
+      rows.forEach(row => row.cells[1].innerText = "No tasks");
+    }
+
+    async function generateAISchedule() {
+      let subjects = document.getElementById("subjectsInput").value.split(",").map(s => s.trim());
+      let hours = parseInt(document.getElementById("timeInput").value);
+      let res = await fetch("/generate_ai_schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subjects, hours })
+      });
+      if (!res.ok) return alert("❌ Error generating AI schedule");
+      let data = await res.json();
+      resetTable();
+      let rows = document.querySelectorAll("#plannerTable tbody tr");
+      rows.forEach(row => {
+        let day = row.cells[0].innerText;
+        if (data[day] && data[day].length > 0) {
+          row.cells[1].innerText = data[day].join(", ");
+        }
+      });
+    }
+
+
+
+
+
+
+// ✅ Connect manual schedule APIs to backend
+async function saveManualSchedule() {
+  let rows = document.querySelectorAll("#plannerTable tbody tr");
+  let schedule = {};
+  rows.forEach(row => {
+    let day = row.cells[0].innerText;
+    let tasks = row.cells[1].innerText;
+    schedule[day] = (tasks === "No tasks") ? [] : tasks.split(", ");
+  });
+
+  // Save to backend + MongoDB
+  let res = await fetch("http://localhost:5000/save_manual_schedule", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ schedule })
+  });
+
+  if (res.ok) alert("✅ Manual schedule saved to DB!");
+  else alert("❌ Error saving schedule.");
+}
+
+async function loadManualSchedule() {
+  let res = await fetch("http://localhost:5000/get_manual_schedule");
+  if (!res.ok) return;
+  let data = await res.json();
+
+  resetTable();
+  let rows = document.querySelectorAll("#plannerTable tbody tr");
+  rows.forEach(row => {
+    let day = row.cells[0].innerText;
+    if (data[day] && data[day].length > 0) {
+      row.cells[1].innerText = data[day].join(", ");
+    }
+  });
+}
+
+async function clearManualSchedule() {
+  resetTable();
+  await fetch("http://localhost:5000/clear_manual_schedule", { method: "POST" });
+  alert("🗑 Manual schedule cleared from DB!");
+}
+
+// ✅ AI Schedule with Gemini API + MongoDB
+async function generateAISchedule() {
+  let subjects = document.getElementById("subjectsInput").value.split(",").map(s => s.trim());
+  let hours = parseInt(document.getElementById("timeInput").value);
+
+  let res = await fetch("http://localhost:5000/generate_ai_schedule", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subjects, hours })
+  });
+
+  if (!res.ok) return alert("❌ Error generating AI schedule");
+
+  let data = await res.json();
+  resetTable();
+
+  let rows = document.querySelectorAll("#plannerTable tbody tr");
+  rows.forEach(row => {
+    let day = row.cells[0].innerText;
+    if (data[day] && data[day].length > 0) {
+      row.cells[1].innerText = data[day].join(", ");
+    }
+  });
+
+  alert("🤖 AI schedule generated & saved in DB!");
+}
+
+
+    
+  </script>
+</body>
+</html>

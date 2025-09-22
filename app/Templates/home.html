@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyStudyLife | Student Planner</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:"Poppins", sans-serif; }
+    body { background:#f4f9ff; color:#333; transition: 0.3s, color 0.3s; }
+
+    /* PRELOADER */
+    #preloader {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #3498db;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      color: white; font-size: 28px; font-weight: bold;
+      z-index: 3000;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+    #preloader i {
+      font-size: 60px; margin-bottom: 20px;
+      animation: bounce 1.5s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    header { background:#3498db; color:white; display:flex; justify-content:space-between; align-items:center; padding:15px 8%; position:sticky; top:0; z-index:1000; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
+    header .logo { font-size:22px; font-weight:700; }
+    nav ul { list-style:none; display:flex; gap:20px; }
+    nav ul li a { color:white; text-decoration:none; font-weight:500; transition:0.3s; }
+    nav ul li a:hover { color:#ffdd59; }
+    .auth-buttons button { padding:8px 18px; margin-left:10px; border:none; border-radius:6px; cursor:pointer; font-weight:600; transition:0.3s; }
+    .signin { background:white; color:#3498db; }
+    .signin:hover { background:#ecf0f1; }
+    .login { background:#e74c3c; color:white; border-radius: 2px;}
+    .login:hover { background:#c0392b; }
+
+    .hero { display:flex; align-items:center; justify-content:space-between; padding:80px 8%; background:#dfefff; }
+    .hero-text { max-width:50%; }
+    .hero-text h1 { font-size:40px; font-weight:700; margin-bottom:20px; }
+    .hero-text p { font-size:16px; line-height:1.6; margin-bottom:30px; }
+    .btn-primary { background:#3498db; color:white; padding:14px 24px; border-radius:8px; text-decoration:none; font-weight:600; transition:0.3s; display:inline-block; }
+    .btn-primary:hover { background:#2980b9; }
+    .hero img { max-width:40%; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.2); }
+
+    .store-buttons { display:flex; justify-content:center; gap:20px; margin:50px 0; }
+    .store-buttons button { background:black; color:white; border:none; padding:14px 28px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:0.3s; }
+    .store-buttons button:hover { background:#333; }
+
+    @media (max-width:900px) {
+      .hero { flex-direction:column; text-align:center; }
+      .hero-text, .hero img { max-width:100%; }
+      .hero img { margin-top:20px; }
+    }
+
+    .heading { font-size:60px; font-weight:bold; background:linear-gradient(90deg, #2563eb, #9333ea); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .boxs { display:flex; justify-content:space-evenly; align-items:center; margin-top:40px; }
+    .box { height:300px; width:420px; border:2px solid black; border-radius:45px; background:linear-gradient(45deg, #8FBFFF, #B388F5, #ffffff); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:20px; opacity:0; transform:translateY(50px); transition:0.6s ease-in-out; }
+    .box.visible { opacity:1; transform:translateY(0); }
+    .box i { font-size:40px; margin-bottom:15px; }
+    .box:hover { background-color:lightblue; cursor:pointer; transform:scale(1.05); transition:all 0.3s ease-in-out; }
+    .box h3 { font-size:20px; margin-bottom:12px; font-weight:600; }
+    .box p { font-size:14px; line-height:1.5; }
+    .headingwhy { text-align:center; margin-bottom:20px; font-size:25px; }
+    .About { text-align:center; padding:50px 20%; }
+    .About h1 { font-size:30px; font-weight:700; margin-bottom:20px; }
+    .About p { font-size:16px; line-height:1.6; }
+    .features-row { display:flex; justify-content:center; gap:40px; padding:20px; background:#f9fbff; }
+    .feature-item { max-width:250px; text-align:center; }
+    .feature-item i { font-size:20px; margin-bottom:5px; display:block; }
+    .star-icon { color:#f1c40f; } .user-icon { color:#2a6cf0; }
+    .feature-item h4 { font-size:1rem; font-weight:600; margin-bottom:5px; }
+    .feature-item p { font-size:0.85rem; color:#555; line-height:1.4; }
+    .footer-content { background:#252626; color:white; padding:30px 8%; text-align:center; }
+    .footer-content a { color:white; margin:0 10px; text-decoration:none; }
+
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:2000; }
+    .modal-content { background:white; padding:30px; border-radius:10px; width:300px; text-align:center; position:relative; }
+    .modal input { width:90%; margin:10px 0; padding:8px; border:1px solid #ccc; border-radius:5px; }
+    .close { position:absolute; right:15px; top:10px; font-size:22px; cursor:pointer; }
+    /* Rounded buttons for login & signup inside popup */
+.modal-content button {
+  border-radius: 25px;   /* makes button pill-shaped */
+  padding: 10px 20px;    /* extra padding for nice look */
+  font-size: 16px;       /* adjust text size */
+  cursor: pointer;
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- PRELOADER -->
+  <div id="preloader">
+    <i class="fas fa-graduation-cap"></i>
+    <p>MyStudyLife</p>
+  </div>
+
+  <!-- NAVBAR -->
+  <header>
+    <div class="logo">MyStudyLife</div>
+    <nav>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+    </nav>
+    <div class="auth-buttons">
+  <button onclick="openModal('signupModal')" class="signin">Sign In</button>
+  <button onclick="openModal('loginModal')" class="login">Log In</button>
+</div>
+ <!-- SIGNUP POPUP -->
+<div id="signupModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('signupModal')">&times;</span>
+    <h2>Sign Up</h2>
+    <form method="POST" action="/auth/signup">
+      <input type="email" name="email" placeholder="Enter Email" required>
+      <input type="password" name="password" placeholder="Enter Password" required>
+      <button type="submit" class="signin">Sign Up</button>
+    </form>
+  </div>
+</div>
+
+<!-- LOGIN POPUP -->
+<div id="loginModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('loginModal')">&times;</span>
+    <h2>Log In</h2>
+    <form method="POST" action="/auth/login">
+      <input type="email" name="email" placeholder="Enter Email" required>
+      <input type="password" name="password" placeholder="Enter Password" required>
+      <button type="submit" class="login">Log In</button>
+    </form>
+  </div>
+</div>
+
+
+    
+  </header>
+
+  <!-- HERO SECTION -->
+  <section id="home" class="hero">
+    <div class="hero-text">
+      <h1 class="heading"></h1>
+      <p>An AI-powered chatbot designed to help students with career guidance, study support, and answering academic queries instantly.</p>
+      <a href="#" class="btn-primary">Get Started Free</a>
+    </div>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQQlrQhbxA9E74GohpknKA1Wv_UV1Bt-rCX7bmwDsqoCw_-jUHD-tR2b7h4Fkxw8ol9h4&usqp=CAU" height="500px" width="500px" alt="Success Steps">
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="whychose">
+      <div class="headingwhy">
+        <h1>Why Choose smart study assistant?</h1>
+        <p>Discover the powerful features that make learning easier and more effective</p>
+      </div>
+      <div class="boxs">
+        <div class="box">
+          <i class="fa-solid fa-book"></i>
+          <p>Get instant help with homework, explanations of complex concepts, and study strategies tailored to your learning style.</p>
+        </div>
+        <div class="box">
+          <i class="fa-solid fa-user-graduate"></i>
+          <h3>Career Guidance</h3>
+          <p>Explore career paths, get advice on course selection, and receive personalized recommendations for your future.</p>
+        </div>
+        <div class="box">
+          <i class="fa-solid fa-comments"></i>
+          <h3>Instant Answers</h3>
+          <p>Ask any academic question and get detailed, accurate answers instantly. Available 24/7 whenever you need help.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="About">
+    <h1>About smart study assistant</h1>
+    <p>Our AI assistant is built specifically for students, combining advanced natural language processing with educational expertise. We understand the challenges students face and provide personalized, intelligent support to help you succeed in your academic journey.</p>
+  </section>
+
+  <!-- FEATURES ROW -->
+  <section class="features-row">
+    <div class="feature-item">
+      <i class="fas fa-star star-icon"></i>
+      <h4>Smart & Adaptive</h4>
+      <p>Learns from your interactions to provide increasingly personalized assistance.</p>
+    </div>
+    <div class="feature-item">
+      <i class="fas fa-user-friends user-icon"></i>
+      <h4>Student-Focused</h4>
+      <p>Designed specifically for students with features that address real academic needs.</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-content">
+      <h1>Smart study assistant</h1>
+      <p>Your AI-powered study companion for academic success.</p>
+      <a href="#">Privacy policy</a>
+      <a href="#">Terms of service</a>
+      <a href="#">Contact</a>
+    </div>
+  </footer>
+
+<script>
+  function initFeatures(){
+    document.querySelectorAll('nav a').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const section = document.querySelector(this.getAttribute('href'));
+        if (section) { section.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    });
+
+    const boxes = document.querySelectorAll(".box");
+    window.addEventListener("scroll", () => {
+      boxes.forEach(box => {
+        const rect = box.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 50) { box.classList.add("visible"); }
+      });
+    });
+
+    const text = "smart study assistant";
+    let i = 0;
+    function typeEffect() {
+      if (i < text.length) {
+        document.querySelector(".heading").innerHTML = text.substring(0, i+1);
+        i++;
+        setTimeout(typeEffect, 100);
+      }
+    }
+    typeEffect();
+  }
+
+  window.onload = () => {
+    setTimeout(() => {
+      document.getElementById("preloader").style.opacity = "0";
+      document.getElementById("preloader").style.visibility = "hidden";
+      initFeatures();
+    }, 2000);
+  };
+    function openModal(id) {
+    document.getElementById(id).style.display = 'flex';
+  }
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+
+  // Close modal when clicking outside
+  window.onclick = function(e) {
+    if (e.target.classList.contains('modal')) {
+      e.target.style.display = 'none';
+    }
+  }
+</script>
+
+</body>
+</html>

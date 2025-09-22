@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>📅 Task Reminder Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+          background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcPcyOgr2yDPOAidqlNr1B2U3PPgfm2Bgwtw&s");
+        background-size: cover;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      transition: margin-left 0.4s ease-in-out;
+    }
+
+    /* Navbar */
+    .navbar {
+    width:100% ;
+      background:#2563EB;
+      padding:10px 20px;
+      display:flex; 
+      justify-content:space-between;
+      align-items:center;
+      color:white;
+    }
+
+    /* Sidebar */
+    .slider {
+      width: 200px;
+      height: 100vh;
+      background-color: #2563EB;
+      position: fixed;
+      top: 0;
+      left: 0;
+      transform: translateX(-200px); /* hidden */
+      transition: transform 0.4s ease-in-out;
+      color: white;
+      padding: 20px 10px;
+      box-sizing: border-box;
+      z-index: 998;
+      display: flex;
+      flex-direction: column;
+    }
+    body.open .slider {
+      transform: translateX(0);
+    }
+    body.open .content {
+      margin-left: 200px;
+    }
+
+    .slidbtn button {
+      width: 40px;
+      height: 40px;
+      background-color: rgb(15, 16, 17);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      border-radius: 5px;
+    }
+    .slidbtn button:hover {
+      background-color: rgb(30, 30, 30);
+    }
+
+    /* Sidebar menu */
+    .slider h2 { margin-bottom: 10px; }
+    .menu button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 8px;
+      background: white;
+      color: #007bff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    .menu button:hover {
+      background: #0056b3;
+      color: white;
+      transform: translateX(5px);
+    }
+
+    .logout-btn {
+      background: #111;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+    .logout-btn:hover {
+      background: #e63946;
+    }
+
+    /* Reminder Section */
+    .reminder-container {
+      max-width: 800px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    h2 { margin-bottom: 15px; }
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      font-weight: bold;
+      transition: background 0.3s ease;
+      cursor: pointer;
+    }
+    button:hover { background-color: #388e3c; }
+    .task-list { margin-top: 20px; }
+    .task-item {
+      padding: 15px;
+      border-left: 5px solid #4a90e2;
+      background: #f9f9f9;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
+    .completed {
+      text-decoration: line-through;
+      color: gray;
+      opacity: 0.7;
+    }
+    .task-timer {
+      font-size: 14px;
+      color: #999;
+      margin-top: 5px;
+    }
+    .task-actions button {
+      width: auto;
+      margin-right: 10px;
+      background-color: #2196f3;
+    }
+    .task-actions button:last-child { background-color: #f44336; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <section>
+    <nav class="navbar">
+      <div class="slidbtn">
+        <button id="slider-btn" onclick="slidbar()">☰</button>
+      </div>
+      <h1>📘 Smart Study Planner</h1>
+      <a href="logout.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+  </section>
+
+  <!-- Sidebar -->
+  <div class="slider" id="slider">
+    <h2>Menu</h2>
+    <div class="menu">
+      <button onclick="window.location.href='home.html'">Home</button><br>
+    <button onclick="window.location.href='/dashboard/dashboard'">Dashboard</button><br>
+    <button onclick="window.location.href='/planner/planner'">Planner</button><br>
+    <button onclick="window.location.href='chatbot.html'">AI Chatbot</button><br>
+    <button onclick="window.location.href='quizzes.html'">AI Quizzes</button><br>
+    <button onclick="window.location.href='notesummariser.html'">Notes Summariser</button><br>
+    <button onclick="window.location.href='/reminder/reminder'">Reminder</button><br>
+    <button onclick="window.location.href='progress.html'">Progress</button><br>
+    </div>
+  </div>
+
+  <!-- Reminder Section -->
+  <div class="reminder-container">
+    <h2>Add New Task</h2>
+    <input type="text" id="task-title" placeholder="Task Title">
+    <textarea id="task-desc" placeholder="Task Description"></textarea>
+    <input type="datetime-local" id="task-deadline">
+    <button onclick="addTask()">➕ Add Task</button>
+
+    <div class="task-list" id="task-list">
+      <!-- Tasks will appear here -->
+    </div>
+  </div>
+
+<script>
+  // Sidebar toggle
+  function slidbar() {
+    document.body.classList.toggle("open");
+    const sliderBtn = document.getElementById("slider-btn");
+    if (document.body.classList.contains("open")) {
+      sliderBtn.style.display = "none";
+    } else {
+      sliderBtn.style.display = "inline-block";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const menuHeading = document.querySelector(".slider h2");
+    menuHeading.addEventListener("click", function() {
+      document.body.classList.remove("open");
+      document.getElementById("slider-btn").style.display = "inline-block";
+    });
+  });
+
+  // Task manager
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+  function saveTasks() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }
+
+  function addTask() {
+    const title = document.getElementById("task-title").value;
+    const desc = document.getElementById("task-desc").value;
+    const deadline = document.getElementById("task-deadline").value;
+
+    if (!title || !deadline) {
+      alert("⚠ Please enter title and deadline");
+      return;
+    }
+
+    const newTask = {
+      id: Date.now(),
+      title,
+      desc,
+      deadline,
+      completed: false
+    };
+
+    tasks.push(newTask);
+    saveTasks();
+    renderTasks();
+
+    document.getElementById("task-title").value = "";
+    document.getElementById("task-desc").value = "";
+    document.getElementById("task-deadline").value = "";
+
+    alert("✅ Task Added Successfully!");
+  }
+
+  function renderTasks() {
+    const taskList = document.getElementById("task-list");
+    taskList.innerHTML = "";
+
+    tasks.forEach(task => {
+      const taskItem = document.createElement("div");
+      taskItem.className = "task-item";
+      if (task.completed) taskItem.classList.add("completed");
+
+      taskItem.innerHTML = `
+        <h3>${task.title}</h3>
+        <p>${task.desc || ""}</p>
+        <p class="task-timer">Deadline: ${task.deadline}</p>
+        <div class="task-actions">
+          <button onclick="completeTask(${task.id})">✔ Complete</button>
+          <button onclick="deleteTask(${task.id})">✖ Delete</button>
+        </div>
+      `;
+      taskList.appendChild(taskItem);
+    });
+  }
+
+  function completeTask(id) {
+    tasks = tasks.map(task =>
+      task.id === id ? { ...task, completed: !task.completed } : task
+    );
+    saveTasks();
+    renderTasks();
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(task => task.id !== id);
+    saveTasks();
+    renderTasks();
+  }
+
+  window.onload = renderTasks;
+</script>
+
+</body>
+</html>

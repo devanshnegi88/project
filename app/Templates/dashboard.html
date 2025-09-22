@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+ <title>Push Sidebar</title>
+ <style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+
+    /* ❌ Local PC path hatao, ye browser me nahi chalega */
+    /* background-image: url("c:\Users\HP\AppData\Local\Microsoft\Windows\INetCache\IE\38LPQ6DI\Gemini_Generated_Image.png"); */
+
+    /* ✅ Use relative path (same folder me image ho to) */
+    background-image: url("photo1.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+
+    transition: margin-left 0.4s ease-in-out;
+  }
+
+  /* Sidebar */
+  .slider {
+   width: 200px;
+   height: 100vh;
+   background-color: rgb(23, 134, 246);
+   position: fixed;
+   top: 0;
+   left: 0;
+   transform: translateX(-200px); /* hidden */
+   transition: transform 0.4s ease-in-out;
+   color: white;
+   padding: 20px 10px;
+   box-sizing: border-box;
+   z-index: 998;
+   margin-top: 10px;
+   display: flex;
+   flex-direction: column;
+   margin: 1px;
+  }
+
+  /* ✅ Navbar */
+  .navbar.bg-body-tertiary {
+    background-color: rgb(62, 108, 234);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+  }
+    
+  /* Toggle button */
+  .slidbtn {
+   position: relative;  
+   display: inline-block;
+   margin-right: 10px;
+   z-index: 999;
+  }
+  .slidbtn button {
+   width: 40px;
+   height: 40px;
+   background-color: rgb(15, 16, 17);
+   color: white;
+   border: none;
+   cursor: pointer;
+   font-size: 20px;
+   border-radius: 5px;
+   transition: background 0.2s;
+  }
+  .slidbtn button:hover {
+   background-color: rgb(30, 30, 30);
+  }
+
+  /* Main content */
+  .content {
+   padding: 20px;
+   transition: margin-left 0.4s ease-in-out;
+  }
+
+  /* ✅ Sidebar open state */
+  body.open .slider {
+    transform: translateX(0);
+  }
+  body.open .content {
+    margin-left: 200px;
+  }
+
+  /* ❌ Duplicate sidebar - already defined above
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100%;
+    background: linear-gradient(180deg, #007bff, #0056b3);
+    padding: 20px;
+    color: white;
+    font-family: Arial, sans-serif;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  } */
+
+  /* Menu title */
+  .slider h2 {
+    margin: 0 0 20px;
+    font-size: 22px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  /* Buttons */
+  .menu button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    background: white;
+    color: #007bff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  .menu button:hover {
+    background: #0056b3;
+    color: white;
+    transform: translateX(5px);
+  }
+
+  .card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+  }
+  .card:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);
+    background: linear-gradient(135deg, #f8fbff, #eaf3ff);
+  }
+
+  /* ❌ Duplicate body styling - already defined above
+  body { margin:0; font-family:Arial, sans-serif; background-image: url("..."); } 
+  */
+
+  .dashboard { max-width:1200px; margin:20px auto; padding:20px; }
+  h1 { text-align:center; margin-bottom:20px; color:#333; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; }
+  .card h3 { margin:0 0 10px; font-size:18px; color:#444; }
+  .card p { font-size:24px; font-weight:bold; color:#007bff; margin:0; }
+  .charts { display:grid; grid-template-columns:repeat(auto-fit,minmax(400px,1fr)); gap:20px; margin-top:30px; }
+  canvas { background:#fff; border-radius:12px; box-shadow:0 3px 6px rgba(0,0,0,0.1); padding:10px; }
+
+  .logout-btn {
+    background: #111;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 16px;
+    transition: background 0.3s ease;
+  }
+  .logout-btn:hover {
+    background: #e63946;
+  }
+  
+  /* 🌈 Animated Background ❌ This overrides image */
+  /* body {
+    background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #a18cd1, #fbc2eb);
+    background-size: 400% 400%;
+    animation: gradientBG 12s ease infinite;
+  } */
+  @keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+  }
+
+  /* ✨ Button Animation */
+  .menu button {
+    position: relative;
+    overflow: hidden;
+  }
+  .menu button::after {
+    content: "";
+    position: absolute;
+    left: -100%;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.3);
+    transition: left 0.4s;
+  }
+  .menu button:hover::after {
+    left: 100%;
+  }
+  .menu button:active {
+    transform: scale(0.95);
+    background: #003f91;
+    color: #fff;
+  }
+
+  @media (max-width: 768px) {
+    body.open .content {
+      margin-left: 0;
+    }
+    .cards, .charts {
+      grid-template-columns: 1fr;
+    }
+    .navbar.bg-body-tertiary {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+ </style>
+</head>
+<body>
+  <section>
+    <nav class="navbar bg-body-tertiary">
+      <div class="slidbtn">
+        <button id="slider-btn" onclick="slidbar()">☰</button>
+      </div>
+      <a href="/auth/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+  </section>
+  
+  <div class="slider" id="slider">
+    <h2>Menu</h2>
+    <div class="menu">
+      <button>Home</button><br>
+      <button>Dashboard</button><br>
+      <button>Planner</button><br>
+      <button>AI Chatbot</button><br>
+      <button>AI Quizzes</button><br>
+      <button>Notes Summariser</button><br>
+      <button>Reminder</button><br>
+      <button>Progress</button><br>
+    </div>
+  </div>
+
+  <div class="slider" id="slider">
+  <h2>Menu</h2>
+  <div class="menu">
+    <button onclick="window.location.href='/'">Home</button><br>
+    <button onclick="window.location.href='/dashboard/dashboard'">Dashboard</button><br>
+    <button onclick="window.location.href='/planner/planner'">Planner</button><br>
+    <button onclick="window.location.href='/chatbot/'">AI Chatbot</button><br>
+    <button onclick="window.location.href='/quizzes/quizzes'">AI Quizzes</button><br>
+    <button onclick="window.location.href='/notes_sumariser/sumariser'">Notes Summariser</button><br>
+    <button onclick="window.location.href='/reminders/reminders'">Reminder</button><br>
+    <button onclick="window.location.href='/progress/progress'">Progress</button><br>
+    <button onclick="window.location.href='/auth/logout'">Logout</button><br>
+    
+  </div>
+</div>
+
+
+  <div class="dashboard">
+    <h1>📊 Smart Study Dashboard</h1>
+<div class="cards">
+  <div class="card"><h3>Study Time</h3><p id="studyTime">0h 0m</p></div>
+  <div class="card"><h3>Topics Completed</h3><p id="topics">0</p></div>
+  <div class="card"><h3>Quiz Performance</h3><p id="quiz">0%</p></div>
+  <div class="card"><h3>Focus Score</h3><p id="focus">0 / 10</p></div>
+</div>
+
+
+<div class="charts">
+  <canvas id="studyTrend"></canvas>
+  <canvas id="quizTrend"></canvas>
+</div>
+
+  </div>
+
+  <script>
+// let studyChart, quizChart;
+
+// async function loadStats() {
+//   const res = await fetch("/api/stats");
+//   const data = await res.json();
+
+//   let hours = Math.floor(data.studyMinutes / 60);
+//   let mins = data.studyMinutes % 60;
+//   document.getElementById("studyTime").textContent = `${hours}h ${mins}m`;
+//   document.getElementById("topics").textContent = data.topicsCompleted;
+//   document.getElementById("quiz").textContent = data.quizPerformance + "%";
+//   document.getElementById("focus").textContent = data.focusScore + " / 10";
+
+//   if (studyChart) studyChart.destroy();
+//   studyChart = new Chart(document.getElementById("studyTrend"), {
+//     type: 'line',
+//     data: {
+//       labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+//       datasets: [{
+//         label: 'Study Minutes',
+//         data: data.studyHistory,
+//         borderColor: "#007bff",
+//         backgroundColor: "rgba(0,123,255,0.2)",
+//         tension: 0.3,
+//         fill: true
+//       }]
+//     }
+//   });
+
+//   if (quizChart) quizChart.destroy();
+//   quizChart = new Chart(document.getElementById("quizTrend"), {
+//     type: 'bar',
+//     data: {
+//       labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+//       datasets: [{
+//         label: 'Quiz Performance %',
+//         data: data.quizHistory,
+//         backgroundColor: "#28a745"
+//       }]
+//     }
+//   });
+// }
+
+// loadStats();
+// setInterval(loadStats, 10000);
+
+function slidbar() {
+  document.body.classList.toggle("open");  
+  const sliderBtn = document.getElementById("slider-btn");
+  if (document.body.classList.contains("open")) {
+    sliderBtn.textContent = "✖";
+  } else {
+    sliderBtn.textContent = "☰";
+  }
+}
+
+
+
+
+// async function loadUserProgress() {
+//   try {
+//     // ✅ Call backend API
+//     const res = await fetch("/api/user_progress");
+//     if (!res.ok) throw new Error("Failed to fetch progress");
+
+//     const data = await res.json();
+
+//     // ✅ If no data (new user)
+//     if (!data || Object.keys(data).length === 0) {
+//       document.getElementById("studyTime").textContent = "--";
+//       document.getElementById("topics").textContent = "--";
+//       document.getElementById("quiz").textContent = "--";
+//       document.getElementById("focus").textContent = "--";
+//       return;
+//     }
+
+//     // ✅ Fill Dashboard values
+//     let hours = Math.floor((data.studyMinutes || 0) / 60);
+//     let mins = (data.studyMinutes || 0) % 60;
+//     document.getElementById("studyTime").textContent = `${hours}h ${mins}m`;
+//     document.getElementById("topics").textContent = data.topicsCompleted || 0;
+//     document.getElementById("quiz").textContent = (data.quizPerformance || 0) + "%";
+//     document.getElementById("focus").textContent = (data.focusScore || 0) + " / 10";
+
+//     // ✅ Example additional fields (overall progress)
+//     if (data.remindersCount !== undefined) {
+//       let reminderCard = document.getElementById("reminderProgress");
+//       if (reminderCard) {
+//         reminderCard.textContent = data.remindersCount + " reminders";
+//       }
+//     }
+
+//     // ✅ Update Charts
+//     if (window.studyChart) studyChart.destroy();
+//     studyChart = new Chart(document.getElementById("studyTrend"), {
+//       type: 'line',
+//       data: {
+//         labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+//         datasets: [{
+//           label: 'Study Minutes',
+//           data: data.studyHistory || [0,0,0,0,0,0,0],
+//           borderColor: "#007bff",
+//           backgroundColor: "rgba(0,123,255,0.2)",
+//           tension: 0.3,
+//           fill: true
+//         }]
+//       }
+//     });
+
+//     if (window.quizChart) quizChart.destroy();
+//     quizChart = new Chart(document.getElementById("quizTrend"), {
+//       type: 'bar',
+//       data: {
+//         labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+//         datasets: [{
+//           label: 'Quiz Performance %',
+//           data: data.quizHistory || [0,0,0,0,0,0,0],
+//           backgroundColor: "#28a745"
+//         }]
+//       }
+//     });
+
+//   } catch (err) {
+//     console.error("⚠️ Error loading progress:", err);
+//   }
+// }
+
+// // ⏳ Run when page loads
+// loadUserProgress();
+// setInterval(loadUserProgress, 15000); // refresh every 15s
+
+let studyChart, quizChart;
+
+async function loadUserProgress() {
+    try {
+        const res = await fetch("/api/user_progress");
+        const data = await res.json();
+
+        if (!data || Object.keys(data).length === 0) return;
+
+        // --- Update Cards ---
+        const hours = Math.floor((data.studyMinutes || 0) / 60);
+        const mins = (data.studyMinutes || 0) % 60;
+        document.getElementById("studyTime").textContent = `${hours}h ${mins}m`;
+        document.getElementById("topics").textContent = data.topicsCompleted || 0;
+        document.getElementById("quiz").textContent = (data.quizPerformance || 0) + "%";
+        document.getElementById("focus").textContent = (data.focusScore || 0) + " / 10";
+
+        // --- Update Study Chart ---
+        if (studyChart) studyChart.destroy();
+        studyChart = new Chart(document.getElementById("studyTrend"), {
+            type: 'line',
+            data: {
+                labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+                datasets: [{
+                    label: 'Study Minutes',
+                    data: data.studyHistory || [0,0,0,0,0,0,0],
+                    borderColor: "#007bff",
+                    backgroundColor: "rgba(0,123,255,0.2)",
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true },
+                    tooltip: { mode: 'index' }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // --- Update Quiz Chart ---
+        if (quizChart) quizChart.destroy();
+        quizChart = new Chart(document.getElementById("quizTrend"), {
+            type: 'bar',
+            data: {
+                labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+                datasets: [{
+                    label: 'Quiz Performance %',
+                    data: data.quizHistory || [0,0,0,0,0,0,0],
+                    backgroundColor: "#28a745"
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true },
+                    tooltip: { mode: 'index' }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error("Error loading progress:", err);
+    }
+}
+
+// Load on page load
+loadUserProgress();
+
+// Refresh every 15 seconds (optional)
+setInterval(loadUserProgress, 15000);
+
+let hours = Math.floor((data.studyMinutes || 0) / 60);
+let mins = (data.studyMinutes || 0) % 60;
+document.getElementById("studyTime").textContent = `${hours}h ${mins}m`;
+document.getElementById("topics").textContent = data.topicsCompleted || 0;
+document.getElementById("quiz").textContent = (data.quizPerformance || 0) + "%";
+document.getElementById("focus").textContent = (data.focusScore || 0) + " / 10";
+
+
+</script>
+</body>
+</html>
