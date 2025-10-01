@@ -1,61 +1,54 @@
-from flask import Flask, request, jsonify,Blueprint
-from flask_cors import CORS
+from flask import Blueprint, render_template, request, jsonify
+from werkzeug.utils import secure_filename
 import os
-
-app = Flask(__name__)
-CORS(app)  # ✅ allows frontend (HTML file opened in browser) to call backend
-
-# ✅ Folder to temporarily store uploaded videos
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
-
-notes_sumariser_bp = Blueprint("notes_sumariser", __name__, url_prefix='/notes_sumariser')
-
-
-# --- Mock AI Notes Generator ---
-def generate_lecture_notes(source: str, mode: str = "video"):
-    """
-    Fake notes generator function.
-    Replace this with real Gemini/OpenAI summarisation logic.
-    """
-    if mode == "video":
-        return f"📝 Notes generated from uploaded video: {source}\n\n- Point 1\n- Point 2\n- Point 3"
-    else:
-        return f"📝 Notes generated from YouTube link: {source}\n\n- Summary point A\n- Summary point B\n- Summary point C"
-
-
-# --- Summarisation Route ---
-@notes_sumariser_bp.route("/sumariser", methods=["POST"])
-def summarise():
-    try:
-        # Case 1: YouTube link (JSON)
-        if request.is_json:
-            data = request.get_json()
-            youtube_url = data.get("youtube_url")
-            if not youtube_url:
-                return jsonify({"error": "No YouTube URL provided"}), 400
-
-            notes = generate_lecture_notes(youtube_url, mode="youtube")
-            return jsonify({"notes": notes})
-
-        # Case 2: Video Upload (FormData)
-        if "video" in request.files:
-            video_file = request.files["video"]
-            if video_file.filename == "":
-                return jsonify({"error": "No video file selected"}), 400
-
-            save_path = os.path.join(app.config["UPLOAD_FOLDER"], video_file.filename)
-            video_file.save(save_path)
-
-            notes = generate_lecture_notes(video_file.filename, mode="video")
-            return jsonify({"notes": notes})
-
-        return jsonify({"error": "Invalid request. Provide either YouTube link or video file."}), 400
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+import tempfile
+import google.generativeai as genai
+from dotenv import load_dotenv
 
 
 
+load_dotenv()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+notes_bp = Blueprint("notes_sumariser", __name__, url_prefix="/notes_sumariser")
+
+@notes_bp.route("/sumariser")
+def sumariser_ui():
+    return render_template("notes_summariser.html")
+
+@notes_bp.route("/summarise_local", methods=["POST"])
+def summarise_local():
+    if "video" not in request.files:
+        return jsonify({"error": "No video file provided"}), 400
+    video = request.files["video"]
+    filename = secure_filename(video.filename)
+    temp_path = os.path.join(tempfile.gettempdir(), filename)
+    video.save(temp_path)
+
+    # TODO: Extract audio & transcribe (use whisper or similar)
+    # For demo, we'll just fake transcript
+    transcript = "This is a fake transcript from the uploaded video."
+
+    # Summarise using Gemini
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    response = model.generate_content(f"Summarise these notes: {transcript}")
+    summary = response.text if response.text else "No summary generated."
+    os.remove(temp_path)
+    return jsonify({"summary": summary})
+
+@notes_bp.route("/summarise_youtube", methods=["POST"])
+def summarise_youtube():
+    data = request.get_json()
+    yt_url = data.get("url")
+    if not yt_url:
+        return jsonify({"error": "No YouTube URL provided"}), 400
+
+    # TODO: Download & transcribe YouTube video (use pytube + whisper)
+    # For demo, we'll just fake transcript
+    transcript = f"Transcript from YouTube video at {yt_url}"
+
+    # Summarise using Gemini
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    response = model.generate_content(f"Summarise these notes: {transcript}")
+    summary = response.text if response.text else "No summary generated."
+    return jsonify({"summary": summary})

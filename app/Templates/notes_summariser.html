@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/static/css/notes_summariser.css">
+    
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+ <title>Push Sidebar</title>
+ 
+</head>
+<body>
+  <section>
+    <nav class="navbar bg-body-tertiary">
+      <div class="slidbtn">
+        <button id="slider-btn" onclick="slidbar()">☰</button>
+      </div>
+      <h1>📘 Video To Notes</h1>
+      <a href="logout.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+  </section>
+  
+  <div class="slider" id="slider">
+  <h2>Menu</h2>
+  <div class="menu">
+    <button onclick="window.location.href='/'">Home</button><br>
+    <button onclick="window.location.href='/dashboard/dashboard'">Dashboard</button><br>
+    <button onclick="window.location.href='/planner/planner'">Planner</button><br>
+    <button onclick="window.location.href='/chatbot/'">AI Chatbot</button><br>
+    <button onclick="window.location.href='/quizzes/quizzes'">AI Quizzes</button><br>
+    <button onclick="window.location.href='/notes_sumariser/sumariser'">Notes Summariser</button><br>
+    <button onclick="window.location.href='/reminders/reminders'">Reminder</button><br>
+    <button onclick="window.location.href='/progress/progress'">Progress</button><br>
+    <button onclick="window.location.href='/auth/logout'">Logout</button><br>
+    
+  </div>
+</div>
+
+  <div class="wrap">
+    <div class="card">
+      <h1 class="title">Video to Notes Converter</h1>
+      <p class="sub">Choose a source, process the video, and capture the summary in the notes area below.</p>
+
+      <div class="toggle-row">
+        <div class="toggle-btn-group">
+          <button class="toggle-btn active" id="localBtn">Local Video</button>
+          <button class="toggle-btn" id="ytBtn">YouTube Link</button>
+        </div>
+      </div>
+
+      <div id="localPanel" class="panel active" aria-live="polite">
+        <div class="field">
+          <label for="localVideo">Select a video file</label>
+          <input id="localVideo" type="file" accept="video/*" />
+          <span class="hint">Tip: The accept filter helps pick video files, but still validate on the backend.</span>
+        </div>
+        <div class="row">
+          <button class="btn" id="processLocalBtn" disabled>Process Local Video</button>
+          <span class="hint">Select a file to enable processing.</span>
+        </div>
+      </div>
+
+      <div id="ytPanel" class="panel" aria-live="polite">
+        <div class="field">
+          <label for="ytUrl">Paste YouTube link</label>
+          <input id="ytUrl" type="text" placeholder="https://www.youtube.com/watch?v=VIDEO_ID or https://youtu.be/VIDEO_ID" />
+          <span id="ytError" class="hint" style="color:#b91c1c; display:none;">Invalid YouTube URL. Please check the link.</span>
+        </div>
+        <div class="row">
+          <button class="btn" id="processYtBtn" disabled>Process YouTube Video</button>
+          <span class="hint">Enter a valid YouTube URL to enable processing.</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="summary">Summary / Notes</label>
+        <textarea id="summary" class="summary" placeholder="The generated summary will appear here. Edit or add notes as needed."></textarea>
+      </div>
+    </div>
+  </div>
+
+<script src="/static/js/notes_summariser.js"></script>
+</body>
+</html>

@@ -6,13 +6,13 @@ dashboard_bp = Blueprint("dashboard", __name__, url_prefix='/dashboard')
 
 
 
-@dashboard_bp.route("/dashboard")
+@dashboard_bp.route("/")
 def dashboard():
     if "user" not in session:
         return redirect(url_for("auth.login"))
     return render_template("dashboard.html")   
 
-@dashboard_bp.route("dashboard/api/user_progress")
+@dashboard_bp.route("/api/user_progress")
 def user_progress():
     email = session.get("user")
     if not email:

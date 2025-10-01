@@ -1,0 +1,205 @@
+* {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background-image: url("/static/img/chatbot.png");
+      background-size: cover;
+      
+      transition: margin-left 0.4s ease-in-out;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: #2563EB;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    .navbar h1 {
+      font-size: 20px;
+    }
+
+    /* Sidebar */
+    .slider {
+      width: 200px;
+      height: 100vh;
+      background-color: #2563EB;
+      position: fixed;
+      top: 0;
+      left: 0;
+      transform: translateX(-200px);
+      transition: transform 0.4s ease-in-out;
+      color: white;
+      padding: 20px 10px;
+      z-index: 999;
+      padding-top: 60px; /* space for navbar */
+    }
+
+    body.open .slider {
+      transform: translateX(0);
+    }
+
+    /* Sidebar menu */
+    .menu button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      background: white;
+      color: #007bff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .menu button:hover {
+      background: #0056b3;
+      color: white;
+      transform: translateX(5px);
+    }
+
+    /* Toggle button */
+    .slidbtn button {
+      width: 40px;
+      height: 40px;
+      background-color: #111;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      border-radius: 5px;
+      transition: background 0.2s;
+    }
+
+    .slidbtn button:hover {
+      background-color: #333;
+    }
+
+    .logout-btn {
+      background: #111;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background: #e63946;
+    }
+
+    /* Main content */
+    .content {
+      margin-top: 70px; /* space for navbar */
+      padding: 20px;
+      transition: margin-left 0.4s ease-in-out;
+    }
+
+    body.open .content {
+      margin-left: 200px; /* shift when sidebar opens */
+    }
+
+    /* Chatbot */
+    .chat-container {
+      max-width: 600px;
+      margin: auto;
+      /* Use a semi-transparent background so children keep full opacity */
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      height: 80vh;
+      overflow: hidden;
+      font-weight: bold;
+    }
+
+    .chat-header {
+      background: #3a7bd5;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .message {
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 18px;
+      max-width: 80%;
+      word-wrap: break-word;
+      
+    }
+
+    .user-message {
+      background: #3a7bd5;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+      
+    }
+
+    .bot-message {
+      background: #75d8e1;
+      color: #111;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+      
+      
+    }
+
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+      font-weight: bold;
+      
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+        opacity: 1;
+    }
+
+    .chat-input button {
+      background: #75d8e1;
+      border: none;
+      padding: 12px 18px;
+      color: rgb(22, 21, 21);
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+        opacity: 1;
+    }
+
+    .chat-input button:hover {
+      background: #2a5fa5;
+    }

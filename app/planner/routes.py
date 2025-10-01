@@ -1,18 +1,22 @@
-# from .import planner_bp
 import json
-
-from flask import Flask,Blueprint, request, jsonify, render_template,session,render_template, redirect, url_for
+from flask import Blueprint, request, jsonify, render_template
 from app.models import planner_collection
 import google.generativeai as genai
 
-planner_bp=Blueprint("planner",__name__, url_prefix='/planner')
+from dotenv import load_dotenv
+import os
+import google.generativeai as genai
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+planner_bp = Blueprint("planner", __name__, url_prefix='/planner')
 
 @planner_bp.route("/planner")
 def planner():
-    
     return render_template('planner.html')
 
-
+# Save manual schedule to MongoDB
 @planner_bp.route("/save_manual_schedule", methods=["POST"])
 def save_manual_schedule():
     data = request.json
@@ -24,15 +28,15 @@ def save_manual_schedule():
     )
     return jsonify({"message": "Manual schedule saved successfully!"}), 200
 
-
+# Load manual schedule from MongoDB
 @planner_bp.route("/get_manual_schedule", methods=["GET"])
 def get_manual_schedule():
-    schedule= planner_collection.find_one({"_id": "manual_schedule"})
+    schedule = planner_collection.find_one({"_id": "manual_schedule"})
     if not schedule:
         return jsonify({}), 200
     return jsonify(schedule.get("schedule", {})), 200
 
-
+# Clear manual schedule from MongoDB
 @planner_bp.route("/clear_manual_schedule", methods=["POST"])
 def clear_manual_schedule():
     planner_collection.update_one(
@@ -41,6 +45,7 @@ def clear_manual_schedule():
     )
     return jsonify({"message": "Manual schedule cleared!"}), 200
 
+# Generate AI schedule using Gemini and save to MongoDB
 @planner_bp.route("/generate_ai_schedule", methods=["POST"])
 def generate_ai_schedule():
     data = request.json
@@ -51,62 +56,32 @@ def generate_ai_schedule():
         return jsonify({"error": "Invalid subjects or hours"}), 400
 
     prompt = f"""
-    Create a weekly study schedule in JSON format for a student who wants to study the following subjects: {', '.join(subjects)}.
+    Create a weekly study schedule in plain text for a student who wants to study the following subjects: {', '.join(subjects)}.
     The student has {hours} hours available per day.
     Distribute study tasks intelligently from Monday to Sunday.
     Output format:
-    {{
-      "Monday": ["task1", "task2", ...],
-      "Tuesday": [...],
-      "Wednesday": [...],
-      "Thursday": [...],
-      "Friday": [...],
-      "Saturday": [...],
-      "Sunday": [...]
-    }}
+    Monday: task1, task2, ...
+    Tuesday: ...
+    Wednesday: ...
+    Thursday: ...
+    Friday: ...
+    Saturday: ...
+    Sunday: ...
     """
 
     try:
-        model=genai.GenrativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash-lite")
         response = model.generate_content(prompt)
         text_output = response.text
 
-        schedule = json.loads(text_output)
-
-        # Optionally, save generated schedule
+        # Save the text schedule to MongoDB (optional)
         planner_collection.update_one(
             {"_id": "ai_schedule"},
-            {"$set": {"schedule": schedule}},
+            {"$set": {"schedule_text": text_output}},
             upsert=True
         )
 
-        return jsonify(schedule), 200
+        return jsonify({"schedule": text_output}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-# from flask import Blueprint, request, session, render_template, redirect, url_for
-# from app.extensions import get_db
-
-# planner_bp = Blueprint('planner', __name__)
-
-# @planner_bp.route('/planner', methods=['GET', 'POST'])
-# def planner():
-#     db = get_db()
-#     if request.method == 'POST':
-#         schedule = request.form.get('schedule')
-#         user_email = session.get('user')
-#         if user_email:
-#             db.execute(
-#                 "INSERT INTO planner (user_email, schedule) VALUES (?, ?)",
-#                 (user_email, schedule)
-#             )
-#             db.commit()
-#             return redirect(url_for('planner.planner'))
-#     user_email = session.get('user')
-#     schedules = []
-#     if user_email:
-#         cursor = db.execute(
-#             "SELECT schedule FROM planner WHERE user_email = ?", (user_email,)
-#         )
-#         schedules = cursor.fetchall()
-#     return render_template('planner.html', schedules=schedules)

@@ -36,6 +36,9 @@ def signup():
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+
+    # if 'user' in session:
+    #     return redirect(url_for('dashboard.dashboard'))
     
 
     if request.method == 'POST':
@@ -51,8 +54,10 @@ def login():
         else:
             return "Invalid credentials. Please try again."
         
-    if 'user' in session:
-         return redirect(url_for('dashboard.dashboard'))
+         
+        
+
+         
 
     return redirect(url_for("auth.login"))
 

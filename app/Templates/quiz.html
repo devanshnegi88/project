@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Generator</title>
+</head>
+<body>
+  <h2>Generate Quiz</h2>
+  <input type="text" id="topic" placeholder="Enter topic">
+  <input type="number" id="num" placeholder="Number of questions" min="1" max="20">
+  <button onclick="generateQuiz()">Generate</button>
+
+  <div id="quiz-output"></div>
+
+  <script>
+    async function generateQuiz() {
+      const topic = document.getElementById("topic").value;
+      const num = document.getElementById("num").value;
+
+      const res = await fetch("/quiz/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic, num_questions: num })
+      });
+
+      const data = await res.json();
+      const output = document.getElementById("quiz-output");
+
+      if (data.error) {
+        output.innerHTML = `<p style="color:red">${data.error}</p>`;
+      } else if (data.quiz) {
+        output.innerHTML = data.quiz.map((q, i) => `
+          <div>
+            <p><b>Q${i+1}:</b> ${q.question}</p>
+            <ul>
+              ${q.options.map(opt => `<li>${opt}</li>`).join("")}
+            </ul>
+            <p><i>Answer: ${q.correct_answer}</i></p>
+          </div>
+        `).join("");
+      } else if (data.raw) {
+        output.innerHTML = `<pre>${data.raw}</pre>`;
+      }
+    }
+  </script>
+</body>
+</html>

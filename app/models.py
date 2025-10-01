@@ -5,7 +5,7 @@ users_collection=db['users']
 reminders_collection=db['reminders']
 progress_collection=db['progress']
 planner_collection = db["planner"]
-planner_collection = db["planner"]
+
 quizzes_collection = db["quizzes"]
 
 # from app.extensions import get_db

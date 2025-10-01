@@ -21,8 +21,9 @@ def create_app():
     from app.dashboard.routes import dashboard_bp
     app.register_blueprint(dashboard_bp)
 
-    from app.notes_sumariser.routes import notes_sumariser_bp
-    app.register_blueprint(notes_sumariser_bp)
+    from app.notes_sumariser.routes import notes_bp
+    app.register_blueprint(notes_bp)
+
 
     from app.planner.routes import planner_bp
     app.register_blueprint(planner_bp)
@@ -30,8 +31,8 @@ def create_app():
     from app.progress.routes import progress_bp
     app.register_blueprint(progress_bp)
 
-    from app.quizzes.routes import quizzes_bp
-    app.register_blueprint(quizzes_bp)
+    from app.quizzes.routes import quiz_bp
+    app.register_blueprint(quiz_bp)
 
     from app.reminders.routes import reminders_bp
     app.register_blueprint(reminders_bp)
