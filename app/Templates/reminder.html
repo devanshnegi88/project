@@ -15,8 +15,6 @@
       color: #333;
       transition: margin-left 0.4s ease-in-out;
     }
-
-    /* Navbar */
     .navbar {
       width: 100%;
       background: #2563EB;
@@ -26,8 +24,6 @@
       align-items: center;
       color: white;
     }
-
-    /* Sidebar */
     .slider {
       width: 200px;
       height: 100vh;
@@ -46,7 +42,6 @@
     }
     body.open .slider { transform: translateX(0); }
     body.open .content { margin-left: 200px; }
-
     .slidbtn button {
       width: 40px; height: 40px;
       background-color: rgb(15, 16, 17);
@@ -57,7 +52,6 @@
       border-radius: 5px;
     }
     .slidbtn button:hover { background-color: rgb(30, 30, 30); }
-
     .slider h2 { margin-bottom: 10px; }
     .menu button {
       display: block; width: 100%; padding: 12px; margin: 8px 0;
@@ -67,15 +61,12 @@
       text-align: center; transition: all 0.3s ease;
     }
     .menu button:hover { background: #0056b3; color: white; transform: translateX(5px); }
-
     .logout-btn {
       background: #111; color: white; padding: 10px 15px;
       border-radius: 6px; text-decoration: none; font-size: 16px;
       transition: background 0.3s ease; width: 100px;
     }
     .logout-btn:hover { background: #e63946; }
-
-    /* Reminder Section */
     .reminder-container {
       max-width: 800px;
       margin: 30px auto;
@@ -94,21 +85,38 @@
       border: none; font-weight: bold; transition: background 0.3s ease; cursor: pointer;
     }
     button:hover { background-color: #388e3c; }
-
-    .task-list { margin-top: 20px; }
-    .task-item {
-      padding: 15px;
-      border-left: 5px solid #4a90e2;
-      background: #f9f9f9;
-      margin-bottom: 10px;
+    .reminder-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
       border-radius: 8px;
-      display: flex; justify-content: space-between; align-items: center;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
     }
-    .task-item.completed { text-decoration: line-through; color: gray; opacity: 0.7; }
-    .task-actions button { margin-left: 10px; padding: 5px 10px; cursor: pointer; border-radius: 5px; border: none; }
-    .task-actions button.delete-btn { background: #f44336; color: white; }
-    .task-actions button.complete-btn { background: #2196f3; color: white; margin-right: 5px; }
-
+    .reminder-table th, .reminder-table td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    .reminder-table th {
+      background: #2563EB;
+      color: #fff;
+    }
+    .reminder-table tr:last-child td {
+      border-bottom: none;
+    }
+    .delete-btn {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background: #c62828;
+    }
   </style>
 </head>
 <body>
@@ -146,10 +154,19 @@
     <input type="datetime-local" id="task-deadline">
     <button onclick="addTask()">➕ Add Task</button>
 
-    <div class="task-list" id="task-list">
-      <p id="no-tasks-msg">No reminders yet</p>
-    </div>
-
+    <!-- Reminders Table -->
+    <table class="reminder-table" id="reminderTable">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Deadline</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="reminderTableBody">
+        <tr><td colspan="3" id="no-tasks-msg">No reminders yet</td></tr>
+      </tbody>
+    </table>
   </div>
 
 <script>
@@ -157,43 +174,40 @@
 let tasks = [];
 
 async function loadReminders() {
-  const list = document.getElementById("task-list");
-  list.innerHTML = ""; // clear old content
+  const tbody = document.getElementById("reminderTableBody");
+  tbody.innerHTML = ""; // clear old content
   try {
     const res = await fetch("/reminders/api"); // backend API
     const reminders = await res.json();
     const now = new Date();
 
-    tasks = reminders.filter(r => new Date(r.time) > now); // only active
+    const activeTasks = reminders.filter(r => new Date(r.time) > now); // only active
 
-    if (!tasks.length) {
-      list.innerHTML = "<p id='no-tasks-msg'>No reminders yet</p>";
+    if (!activeTasks.length) {
+      tbody.innerHTML = `<tr><td colspan="3" id="no-tasks-msg">No reminders yet</td></tr>`;
       return;
     }
 
-    tasks.forEach(renderTask);
+    activeTasks.forEach(renderTask);
   } catch (err) {
     console.error(err);
-    list.innerHTML = "<p>Error loading reminders</p>";
+    tbody.innerHTML = `<tr><td colspan="3">Error loading reminders</td></tr>`;
   }
 }
 
-// Render a single task in the list
+// Render a single task in the table
 function renderTask(task) {
-  const list = document.getElementById("task-list");
-  const div = document.createElement("div");
-  div.className = "task-item";
-  div.id = "task-" + task._id;
-  div.innerHTML = `
-    <div>
-      <h3>${task.title}</h3>
-      <p class="task-timer">Deadline: ${new Date(task.time).toLocaleString()}</p>
-    </div>
-    <div class="task-actions">
-      <button class="delete" onclick="deleteReminder('${task._id}')">✖ Delete</button>
-    </div>
+  const tbody = document.getElementById("reminderTableBody");
+  const tr = document.createElement("tr");
+  tr.id = "task-" + task._id;
+  tr.innerHTML = `
+    <td>${task.title}</td>
+    <td>${new Date(task.time).toLocaleString()}</td>
+    <td>
+      <button class="delete-btn" onclick="deleteReminder('${task._id}')">✖ Delete</button>
+    </td>
   `;
-  list.appendChild(div);
+  tbody.appendChild(tr);
 }
 
 // Add new task
@@ -210,10 +224,10 @@ async function addTask() {
 
   if (res.ok) {
     const newTask = await res.json(); // backend returns added task
+    document.getElementById("no-tasks-msg")?.remove();
     renderTask(newTask); // render immediately
     document.getElementById("task-title").value = "";
     document.getElementById("task-deadline").value = "";
-    document.getElementById("no-tasks-msg")?.remove(); // remove "No reminders yet"
   } else {
     alert("Failed to add reminder");
   }
@@ -222,11 +236,52 @@ async function addTask() {
 // Delete task
 async function deleteReminder(id) {
   const res = await fetch(`/reminders/${id}`, { method: "DELETE" });
-  if (res.ok) document.getElementById("task-" + id).remove();
+  if (res.ok) {
+    document.getElementById("task-" + id).remove();
+    // If no tasks left, show "No reminders yet"
+    if (document.getElementById("reminderTableBody").children.length === 0) {
+      document.getElementById("reminderTableBody").innerHTML = `<tr><td colspan="3" id="no-tasks-msg">No reminders yet</td></tr>`;
+    }
+  }
 }
 
 // Load reminders when page loads
 window.onload = loadReminders;
+
+// Sidebar toggle (unchanged)
+function slidbar() {
+  document.body.classList.toggle("open");
+  const sliderBtn = document.getElementById("slider-btn");
+  sliderBtn.textContent = document.body.classList.contains("open") ? "✖" : "☰";
+}
+// ---------- Real-time updates & auto-expiry ----------
+
+// Auto-refresh reminders every 5 seconds and remove expired tasks from table
+setInterval(() => {
+  const now = new Date();
+  const tbody = document.getElementById("reminderTableBody");
+  
+  Array.from(tbody.children).forEach(row => {
+    const deadlineCell = row.children[1];
+    if (deadlineCell) {
+      const deadline = new Date(deadlineCell.textContent);
+      if (deadline <= now) row.remove();
+    }
+  });
+
+  // Fetch new active reminders from backend
+  loadReminders();
+}, 5000);
+
+// Auto-clean expired reminders in MongoDB every 1 minute
+async function cleanupExpiredReminders() {
+  try {
+    await fetch("/reminders/cleanup", { method: "POST" });
+  } catch (err) {
+    console.error("Failed to cleanup expired reminders:", err);
+  }
+}
+setInterval(cleanupExpiredReminders, 5000);
 
 </script>
 
