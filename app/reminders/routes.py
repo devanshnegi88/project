@@ -1,127 +1,57 @@
-# from flask import Blueprint, request, session, render_template, jsonify,redirect, url_for
-# from bson.objectid import ObjectId
-# from app.models import reminders_collection
-
-# reminders_bp = Blueprint("reminders", __name__, url_prefix="/reminders")
-
-# # Render the reminders page
-# @reminders_bp.route("/reminders", methods=["GET"])
-# def reminders_page():
-#     if "user" not in session:
-#         return redirect(url_for("auth.login"))
-
-#     # Fetch reminders for the user
-#     reminders = list(reminders_collection.find({"user": session["user"]}))
-    
-#     # Convert ObjectId to string for frontend usage
-#     for r in reminders:
-#         r["_id"] = str(r["_id"])
-
-#     # Pass reminders to the template
-#     return render_template("reminder.html", reminders=reminders)
-
-
-# # API endpoint for frontend JS to fetch reminders (optional)
-# @reminders_bp.route("/api", methods=["GET"])
-# def get_reminders_api():
-#     if "user" not in session:
-#         return jsonify([])
-#     reminders = list(reminders_collection.find({"user": session["user"]}))
-#     for r in reminders:
-#         r["_id"] = str(r["_id"])
-#     return jsonify(reminders)
-
-
-# # Add a reminder
-# @reminders_bp.route("/add", methods=["POST"])
-# def add_reminder():
-#     if "user" not in session:
-#         return jsonify({"error": "Not logged in"}), 401
-
-#     data = request.json
-#     reminders_collection.insert_one({
-#         "user": session["user"],
-#         "title": data["title"],
-#         "time": data["time"]
-#     })
-#     return jsonify({"status": "success"}), 201
-
-
-# # Delete a reminder
-# @reminders_bp.route("/<id>", methods=["DELETE"])
-# def delete_reminder(id):
-#     if "user" not in session:
-#         return jsonify({"error": "Not logged in"}), 401
-#     reminders_collection.delete_one({"_id": ObjectId(id), "user": session["user"]})
-#     return jsonify({"status": "deleted"})
-
-from flask import Blueprint, request, session, render_template, jsonify, redirect, url_for
-from bson.objectid import ObjectId
-from datetime import datetime
+from flask import Blueprint, request, jsonify,render_template,session
+from bson import ObjectId
+from datetime import datetime,timezone
 from app.models import reminders_collection
+
+import os
 
 reminders_bp = Blueprint("reminders", __name__, url_prefix="/reminders")
 
-# Render the reminders page
-@reminders_bp.route("/reminders", methods=["GET"])
-def reminders_page():
-    if "user" not in session:
-        return redirect(url_for("auth.login"))
+# connect to MongoDB Atlas
+@reminders_bp.route("/")
+def home():
+    return render_template("reminder.html")
 
-    reminders = list(reminders_collection.find({"user": session["user"]}))
-    
-    for r in reminders:
-        r["_id"] = str(r["_id"])
+# 🕒 Ensure TTL index exists
+# This deletes documents automatically after their 'time' passes
+reminders_collection.create_index("time", expireAfterSeconds=0)
 
-    return render_template("reminder.html", reminders=reminders)
-
-# API endpoint for frontend JS to fetch reminders
+# ✅ Fetch active reminders
 @reminders_bp.route("/api", methods=["GET"])
-def get_reminders_api():
-    if "user" not in session:
-        return jsonify([])
-    
-    reminders = list(reminders_collection.find({"user": session["user"]}))
+def get_reminders():
+    now = datetime.utcnow()
+    reminders = list(reminders_collection.find({"time": {"$gt": now}}))
     for r in reminders:
         r["_id"] = str(r["_id"])
     return jsonify(reminders)
 
-# Add a reminder
+# ✅ Add a new reminder
 @reminders_bp.route("/add", methods=["POST"])
 def add_reminder():
     if "user" not in session:
         return jsonify({"error": "Not logged in"}), 401
 
     data = request.json
+
+    # Convert frontend local time to UTC before saving
+    local_time = datetime.fromisoformat(data["time"])
+    utc_time = local_time.astimezone(timezone.utc)
+
     result = reminders_collection.insert_one({
         "user": session["user"],
         "title": data["title"],
-        "time": data["time"]
+        "time": utc_time
     })
+
     return jsonify({
         "status": "success",
         "_id": str(result.inserted_id),
         "title": data["title"],
-        "time": data["time"]
+        "time": data["time"]  # send back original local time for UI
     }), 201
 
-# Delete a reminder
-@reminders_bp.route("/<id>", methods=["DELETE"])
-def delete_reminder(id):
-    if "user" not in session:
-        return jsonify({"error": "Not logged in"}), 401
-    
-    reminders_collection.delete_one({"_id": ObjectId(id), "user": session["user"]})
-    return jsonify({"status": "deleted"})
-
-# @reminders_bp.route("/cleanup", methods=["POST"])
-# def cleanup_expired_reminders():
-#     if "user" not in session:
-#         return jsonify({"error": "Not logged in"}), 401
-
-#     now = datetime.utcnow()
-#     result = reminders_collection.delete_many({
-#         "user": session["user"],
-#         "time": {"$lt": now}
-#     })
-#     return jsonify({"deleted_count": result.deleted_count})
+# ✅ Delete a reminder manually
+@reminders_bp.route("/<reminder_id>", methods=["DELETE"])
+def delete_reminder(reminder_id):
+    reminders_collection.delete_one({"_id": ObjectId(reminder_id)})
+    return jsonify({"message": "Deleted"})

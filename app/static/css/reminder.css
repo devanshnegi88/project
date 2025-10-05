@@ -1,0 +1,228 @@
+ body {
+      font-family: 'Segoe UI', sans-serif;
+      background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcPcyOgr2yDPOAidqlNr1B2U3PPgfm2Bgwtw&s");
+      background-size: cover;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      transition: margin-left 0.4s ease-in-out;
+    }
+
+    
+    .slider {
+      width: 200px;
+      height: 100vh;
+      background-color: #2563EB;
+      position: fixed;
+      top: 0;
+      left: 0;
+      transform: translateX(-200px);
+      transition: transform 0.4s ease-in-out;
+      color: white;
+      padding: 20px 10px;
+      box-sizing: border-box;
+      z-index: 998;
+      display: flex;
+      flex-direction: column;
+    }
+    body.open .slider { transform: translateX(0); }
+    body.open .content { margin-left: 200px; }
+    .slidbtn button {
+      width: 40px; height: 40px;
+      background-color: rgb(15, 16, 17);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      border-radius: 5px;
+    }
+    /* .slidbtn button:hover { background-color: rgb(30, 30, 30); }
+    .slider h2 { margin-bottom: 10px; }
+    .menu button {
+      display: block; width: 100%; padding: 12px; margin: 8px 0;
+      border: none; border-radius: 8px;
+      background: white; color: #007bff;
+      font-size: 16px; font-weight: bold; cursor: pointer;
+      text-align: center; transition: all 0.3s ease;
+    } */
+    .menu button:hover { background: #0056b3; color: white; transform: translateX(5px); }
+    .logout-btn {
+    background: #0e0e0e;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-right: 25px;;
+    text-decoration: none;
+    font-size: 16px;
+    transition: background 0.3s 
+ease;}
+    .logout-btn:hover { background-color: #e63946; }
+    .reminder-container {
+      max-width: 800px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    h2 { margin-bottom: 15px; }
+    input, textarea, button {
+      width: 100%; padding: 12px; margin: 10px 0;
+      font-size: 16px; border: 1px solid #ccc; border-radius: 8px;
+    }
+    button {
+      background-color: #4caf50; color: white;
+      border: none; font-weight: bold; transition: background 0.3s ease; cursor: pointer;
+    }
+    button:hover { background-color: #388e3c; }
+    .reminder-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    }
+    .reminder-table th, .reminder-table td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    .reminder-table th {
+      background: #2563EB;
+      color: #fff;
+    }
+    .reminder-table tr:last-child td {
+      border-bottom: none;
+    }
+    .delete-btn {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background: #c62828;
+    }
+
+  /* body {
+   transition: transform 0.4s ease-in-out;
+   color: white;
+   padding: 20px 10px;
+   box-sizing: border-box;
+   z-index: 998;
+   margin-top: 10px;
+   display: flex;
+   flex-direction: column;
+   margin: 1px;
+  } */
+
+  /* ✅ Navbar */
+  .navbar.bg-body-tertiary {
+    background-color: rgb(62, 108, 234);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+  }
+    
+  /* Toggle button */
+  .slidbtn {
+   position: relative;  
+   display: inline-block;
+   margin-right: 10px;
+   z-index: 999;
+  }
+  .slidbtn button {
+   width: 40px;
+   height: 40px;
+   background-color: rgb(18, 19, 20);
+   color: white;
+   border: none;
+   cursor: pointer;
+   font-size: 20px;
+   border-radius: 5px;
+   padding: 1px 6px;
+   transition: background 0.2s;
+  }
+  .slidbtn button:hover {
+   background-color: rgb(30, 30, 30);
+  }
+
+  /* Main content */
+  .content {
+   padding: 20px;
+   transition: margin-left 0.4s ease-in-out;
+  }
+
+  /* ✅ Sidebar open state */
+  body.open .slider {
+    transform: translateX(0);
+  }
+  body.open .content {
+    margin-left: 200px;
+  }
+
+  
+
+  /* Menu title */
+  .slider h2 {
+    margin: 0 0 20px;
+    font-size: 22px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  /* Buttons */
+  .menu button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    background: white;
+    color: #007bff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  .menu button:hover {
+    background: #0056b3;
+    color: white;
+    transform: translateX(5px);
+  }
+    body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+
+    /* ❌ Local PC path hatao, ye browser me nahi chalega */
+    /* background-image: url("c:\Users\HP\AppData\Local\Microsoft\Windows\INetCache\IE\38LPQ6DI\Gemini_Generated_Image.png"); */
+
+    /* ✅ Use relative path (same folder me image ho to) */
+    /* background-image: url("/static/img/dashboard.png");
+    background-size: cover; */
+    background-position: center;
+    background-attachment: fixed;
+
+    transition: margin-left 0.4s ease-in-out;
+  }
+
+      .navbar {
+      width: 100%;
+      background: #2563EB;
+       margin-right:20px ;
+      
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }

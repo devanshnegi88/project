@@ -12,7 +12,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 notes_bp = Blueprint("notes_sumariser", __name__, url_prefix="/notes_sumariser")
 
-@notes_bp.route("/sumariser")
+@notes_bp.route("/")
 def sumariser_ui():
     return render_template("notes_summariser.html")
 

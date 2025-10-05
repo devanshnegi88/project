@@ -12,7 +12,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 planner_bp = Blueprint("planner", __name__, url_prefix='/planner')
 
-@planner_bp.route("/planner")
+@planner_bp.route("/")
 def planner():
     return render_template('planner.html')
 

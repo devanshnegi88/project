@@ -5,130 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <title>📅 Task Reminder Dashboard</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRcPcyOgr2yDPOAidqlNr1B2U3PPgfm2Bgwtw&s");
-      background-size: cover;
-      margin: 0;
-      padding: 20px;
-      color: #333;
-      transition: margin-left 0.4s ease-in-out;
-    }
-    .navbar {
-      width: 100%;
-      background: #2563EB;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-    }
-    .slider {
-      width: 200px;
-      height: 100vh;
-      background-color: #2563EB;
-      position: fixed;
-      top: 0;
-      left: 0;
-      transform: translateX(-200px);
-      transition: transform 0.4s ease-in-out;
-      color: white;
-      padding: 20px 10px;
-      box-sizing: border-box;
-      z-index: 998;
-      display: flex;
-      flex-direction: column;
-    }
-    body.open .slider { transform: translateX(0); }
-    body.open .content { margin-left: 200px; }
-    .slidbtn button {
-      width: 40px; height: 40px;
-      background-color: rgb(15, 16, 17);
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 20px;
-      border-radius: 5px;
-    }
-    .slidbtn button:hover { background-color: rgb(30, 30, 30); }
-    .slider h2 { margin-bottom: 10px; }
-    .menu button {
-      display: block; width: 100%; padding: 12px; margin: 8px 0;
-      border: none; border-radius: 8px;
-      background: white; color: #007bff;
-      font-size: 16px; font-weight: bold; cursor: pointer;
-      text-align: center; transition: all 0.3s ease;
-    }
-    .menu button:hover { background: #0056b3; color: white; transform: translateX(5px); }
-    .logout-btn {
-      background: #111; color: white; padding: 10px 15px;
-      border-radius: 6px; text-decoration: none; font-size: 16px;
-      transition: background 0.3s ease; width: 100px;
-    }
-    .logout-btn:hover { background: #e63946; }
-    .reminder-container {
-      max-width: 800px;
-      margin: 30px auto;
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    }
-    h2 { margin-bottom: 15px; }
-    input, textarea, button {
-      width: 100%; padding: 12px; margin: 10px 0;
-      font-size: 16px; border: 1px solid #ccc; border-radius: 8px;
-    }
-    button {
-      background-color: #4caf50; color: white;
-      border: none; font-weight: bold; transition: background 0.3s ease; cursor: pointer;
-    }
-    button:hover { background-color: #388e3c; }
-    .reminder-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
-    }
-    .reminder-table th, .reminder-table td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
-    }
-    .reminder-table th {
-      background: #2563EB;
-      color: #fff;
-    }
-    .reminder-table tr:last-child td {
-      border-bottom: none;
-    }
-    .delete-btn {
-      background: #f44336;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .delete-btn:hover {
-      background: #c62828;
-    }
-  </style>
+  <link rel="stylesheet" href="/static/css/reminder.css">
+  <script src="/static/js/reminder.js"></script>
+
 </head>
 <body>
 
   <!-- Navbar -->
   <section>
-    <nav class="navbar">
+    <nav class="navbar bg-body-tertiary">
       <div class="slidbtn">
         <button id="slider-btn" onclick="slidbar()">☰</button>
       </div>
-      <h1>📘 Smart Study Planner</h1>
-      <button class="logout-btn" onclick="location.href='/'"> Logout</button>
+      <a href="/auth/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
     </nav>
   </section>
 
@@ -141,8 +30,8 @@
       <button onclick="location.href='/chatbot/chatbot'">AI Chatbot</button><br>
       <button onclick="location.href='/quiz/quiz'">AI Quizzes</button><br>
       <button onclick="location.href='/notes/notes'">Notes Summariser</button><br>
-      <button onclick="location.href='/reminders/reminders'">Reminder</button><br>
-      <button onclick="location.href='progress/progress'">Progress</button><br>
+      <button onclick="location.href='/reminders'">Reminder</button><br>
+      <button onclick="location.href='progress/'">Progress</button><br>
     </div>
   </div>
 
@@ -169,121 +58,7 @@
     </table>
   </div>
 
-<script>
-// Store tasks temporarily (from backend or newly added)
-let tasks = [];
 
-async function loadReminders() {
-  const tbody = document.getElementById("reminderTableBody");
-  tbody.innerHTML = ""; // clear old content
-  try {
-    const res = await fetch("/reminders/api"); // backend API
-    const reminders = await res.json();
-    const now = new Date();
-
-    const activeTasks = reminders.filter(r => new Date(r.time) > now); // only active
-
-    if (!activeTasks.length) {
-      tbody.innerHTML = `<tr><td colspan="3" id="no-tasks-msg">No reminders yet</td></tr>`;
-      return;
-    }
-
-    activeTasks.forEach(renderTask);
-  } catch (err) {
-    console.error(err);
-    tbody.innerHTML = `<tr><td colspan="3">Error loading reminders</td></tr>`;
-  }
-}
-
-// Render a single task in the table
-function renderTask(task) {
-  const tbody = document.getElementById("reminderTableBody");
-  const tr = document.createElement("tr");
-  tr.id = "task-" + task._id;
-  tr.innerHTML = `
-    <td>${task.title}</td>
-    <td>${new Date(task.time).toLocaleString()}</td>
-    <td>
-      <button class="delete-btn" onclick="deleteReminder('${task._id}')">✖ Delete</button>
-    </td>
-  `;
-  tbody.appendChild(tr);
-}
-
-// Add new task
-async function addTask() {
-  const title = document.getElementById("task-title").value;
-  const time = document.getElementById("task-deadline").value;
-  if (!title || !time) { alert("Please enter title and deadline"); return; }
-
-  const res = await fetch("/reminders/add", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, time })
-  });
-
-  if (res.ok) {
-    const newTask = await res.json(); // backend returns added task
-    document.getElementById("no-tasks-msg")?.remove();
-    renderTask(newTask); // render immediately
-    document.getElementById("task-title").value = "";
-    document.getElementById("task-deadline").value = "";
-  } else {
-    alert("Failed to add reminder");
-  }
-}
-
-// Delete task
-async function deleteReminder(id) {
-  const res = await fetch(`/reminders/${id}`, { method: "DELETE" });
-  if (res.ok) {
-    document.getElementById("task-" + id).remove();
-    // If no tasks left, show "No reminders yet"
-    if (document.getElementById("reminderTableBody").children.length === 0) {
-      document.getElementById("reminderTableBody").innerHTML = `<tr><td colspan="3" id="no-tasks-msg">No reminders yet</td></tr>`;
-    }
-  }
-}
-
-// Load reminders when page loads
-window.onload = loadReminders;
-
-// Sidebar toggle (unchanged)
-function slidbar() {
-  document.body.classList.toggle("open");
-  const sliderBtn = document.getElementById("slider-btn");
-  sliderBtn.textContent = document.body.classList.contains("open") ? "✖" : "☰";
-}
-// ---------- Real-time updates & auto-expiry ----------
-
-// Auto-refresh reminders every 5 seconds and remove expired tasks from table
-setInterval(() => {
-  const now = new Date();
-  const tbody = document.getElementById("reminderTableBody");
-  
-  Array.from(tbody.children).forEach(row => {
-    const deadlineCell = row.children[1];
-    if (deadlineCell) {
-      const deadline = new Date(deadlineCell.textContent);
-      if (deadline <= now) row.remove();
-    }
-  });
-
-  // Fetch new active reminders from backend
-  loadReminders();
-}, 5000);
-
-// Auto-clean expired reminders in MongoDB every 1 minute
-async function cleanupExpiredReminders() {
-  try {
-    await fetch("/reminders/cleanup", { method: "POST" });
-  } catch (err) {
-    console.error("Failed to cleanup expired reminders:", err);
-  }
-}
-setInterval(cleanupExpiredReminders, 5000);
-
-</script>
 
 </body>
 </html>
