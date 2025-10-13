@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Brainwave - Setup Dashboard</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Option page styles (kept) -->
+ 
+
+  <!-- Use the same CSS that index.html/form used -->
+  <link rel="stylesheet" href="/static/css/option.css">
+<script src="/static/js/option.js"></script>
+  <style>
+    /* small modal adjustment so the full form fits comfortably */
+    .modal-content { max-width: 900px; margin: 4% auto; padding: 24px; }
+    /* keep existing option page visual rules below (unchanged) */
+    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg,#4a90e2 0%,#50e3c2 100%); margin:0; color:#333; overflow-x:hidden; }
+    header { padding: 15px 30px; background: rgba(0,0,0,0.6); color: white; display:flex; justify-content:space-between; align-items:center; position: sticky; top:0; z-index:10; }
+    .logo { font-weight:700; font-size:1.8rem; letter-spacing:1px; }
+    header nav ul { list-style:none; display:flex; gap:25px; margin:0; padding:0; }
+    header nav ul li a { color:white; text-decoration:none; font-weight:500; transition:0.3s; }
+    header nav ul li a:hover { color:#ffd700; }
+    .setup-section{ display:flex; justify-content:center; align-items:center; min-height:90vh; text-align:center; padding:40px 20px; animation:fadeIn 1s ease-in-out; }
+    .setup-container{ background: rgba(255,255,255,0.95); padding:40px 30px; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.2); width:100%; max-width:800px; transform:scale(0.95); animation:scaleIn 0.6s forwards; }
+    .setup-options{ display:flex; justify-content:space-around; margin-top:40px; flex-wrap:wrap; gap:25px; }
+    .option{ background: linear-gradient(145deg,#f0f0f0,#ffffff); padding:30px 20px; border-radius:15px; width:250px; box-shadow:0 8px 20px rgba(0,0,0,0.1); transition:all 0.4s ease; cursor:pointer; position:relative; overflow:hidden; }
+    .option i{ font-size:3rem; color:#4a90e2; margin-bottom:15px; transition:transform 0.4s; }
+    .option h3{ margin-bottom:10px; font-size:1.3rem; color:#1d1d1d; }
+    .option p{ font-size:0.95rem; color:#666; line-height:1.4; }
+    .option button{ margin-top:20px; padding:12px 20px; border:none; background:#4a90e2; color:white; font-weight:600; border-radius:8px; cursor:pointer; transition:all 0.3s ease; }
+    .option button:hover{ background:#357ab7; transform:translateY(-3px); }
+    .option:hover{ transform:translateY(-10px) rotate(-1deg); box-shadow:0 15px 30px rgba(0,0,0,0.2); }
+    .option:hover i{ transform:scale(1.2) rotate(15deg); }
+
+    /* Modal (kept) */
+    .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.7); animation:fadeIn 0.5s ease; }
+    .modal-content { background-color:#fff; border-radius:15px; position:relative; box-shadow:0 15px 40px rgba(0,0,0,0.3); animation:slideIn 0.5s ease; }
+    .close { position:absolute; top:10px; right:15px; font-size:28px; font-weight:600; cursor:pointer; color:#333; transition:0.3s; }
+    .close:hover { color:#4a90e2; }
+
+    @keyframes fadeIn { 0%{opacity:0;} 100%{opacity:1;} }
+    @keyframes scaleIn { 0%{transform:scale(0.9);opacity:0;} 100%{transform:scale(1);opacity:1;} }
+    @keyframes slideIn { 0%{transform:translateY(-50px);opacity:0;} 100%{transform:translateY(0);opacity:1;} }
+    
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Brainwave</div>
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="setup-section">
+  <div class="setup-container">
+    <h1>Welcome to Brainwave!</h1>
+    <p>Choose how you want to set up your dashboard:</p>
+
+    <div class="setup-options">
+      <div class="option">
+        <i class="fa-solid fa-pen-to-square"></i>
+        <h3>Manual Setup</h3>
+        <p>Create your dashboard manually with subjects & schedule.</p>
+        <button onclick="startManual()">Choose Manual</button>
+      </div>
+
+      <div class="option">
+        <i class="fa-solid fa-robot"></i>
+        <h3>AI Setup</h3>
+        <p>Answer a short quiz and let AI personalize your dashboard.</p>
+        <button onclick="openModal('aiQuizModal')">Choose AI</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Modal now contains the full index.html preferences form (uses style.css + script.js) -->
+<div id="aiQuizModal" class="modal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="preferencesTitle">
+    <span class="close" onclick="closeModal('aiQuizModal')" aria-label="Close">&times;</span>
+
+    <!-- Inserted form from index.html (keeps same IDs/classes) -->
+    <div class="container">
+      <header class="header">
+        <h1 id="preferencesTitle">AI Study Preferences</h1>
+        <p>Personalize your learning experience with AI-powered insights</p>
+      </header>
+
+      <form id="preferencesForm" class="form-container">
+        <!-- Section 1: Basic Information -->
+        <section class="form-section">
+          <h2 class="section-title">1️⃣ Basic Information</h2>
+
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="educationLevel">Education Level</label>
+            <select id="educationLevel" name="educationLevel" required>
+              <option value="">Select your level</option>
+              <option value="high-school">High School</option>
+              <option value="undergraduate">Undergraduate</option>
+              <option value="graduate">Graduate</option>
+              <option value="professional">Professional</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="currentYear">Current Grade / Year</label>
+            <input type="text" id="currentYear" name="currentYear" placeholder="e.g., Grade 10, Year 2" required>
+          </div>
+        </section>
+
+        <!-- Section 2: Subjects & Goals -->
+        <section class="form-section">
+          <h2 class="section-title">2️⃣ Subjects & Goals</h2>
+
+          <div class="form-group">
+            <label>Subjects You're Studying</label>
+            <div class="added-subjects">
+              <label for="newSubject" class="sr-only">Add a subject</label>
+              <input type="text" id="newSubject" name="newSubject" placeholder="Add a subject (e.g., Mathematics)" autocomplete="off">
+              <button type="button" id="addSubjectBtn">ADD</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="examGoal">Exam / Goal</label>
+            <input type="text" id="examGoal" name="examGoal" placeholder="e.g., SAT, Final Exams, Certification">
+          </div>
+
+          <div class="form-group">
+            <label>Confidence Level (1-5) - Optional for selected subjects</label>
+            <div id="confidenceLevels" class="confidence-container">
+              <p class="helper-text">Select subjects above to set confidence levels</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3: Schedule & Time Preferences -->
+        <section class="form-section">
+          <h2 class="section-title">3️⃣ Schedule & Time Preferences</h2>
+
+          <div class="form-group">
+            <label>Available Study Days</label>
+            <div class="checkbox-grid days-grid">
+              <label class="checkbox-label"><input type="checkbox" name="studyDays" value="monday"><span>Mon</span></label>
+              <label class="checkbox-label"><input type="checkbox" name="studyDays" value="tuesday"><span>Tue</span></label>
+              <label class="checkbox-label"><input type="checkbox" name="studyDays" value="wednesday"><span>Wed</span></label>
+              <label class="checkbox-label"><input type="checkbox" name="studyDays" value="thursday"><span>Thu</span></label>
+              <label class="checkbox-label"><input type="checkbox" name="studyDays" value="friday"><span>Fri</span></label>
+              <label class="checkbox-label"><input type="checkbox" name="studyDays" value="saturday"><span>Sat</span></label>
+              <label class="checkbox-label"><input type="checkbox" name="studyDays" value="sunday"><span>Sun</span></label>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="startTime">Daily Start Time</label>
+              <input type="time" id="startTime" name="startTime">
+            </div>
+            <div class="form-group">
+              <label for="endTime">Daily End Time</label>
+              <input type="time" id="endTime" name="endTime">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="studyDuration">Preferred Study Duration</label>
+            <select id="studyDuration" name="studyDuration">
+              <option value="">Select duration</option>
+              <option value="short">Short (1 - 2 hr)</option>
+              <option value="moderate">Moderate (2 - 4 hr)</option>
+              <option value="long">Long (4+ hr)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="breakPreference">Break Preference</label>
+            <select id="breakPreference" name="breakPreference">
+              <option value="">Select break frequency</option>
+              <option value="30min">Every 30 min</option>
+              <option value="1hr">Every 1 hr</option>
+              <option value="2hr">Every 2 hr</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Section 5: AI Customization -->
+        <section class="form-section">
+          <h2 class="section-title">5️⃣ AI Customization</h2>
+
+          <div class="form-group">
+            <label for="aiPlanFocus">AI Plan Focus</label>
+            <select id="aiPlanFocus" name="aiPlanFocus">
+              <option value="">Select focus</option>
+              <option value="grades">Grades</option>
+              <option value="understanding">Understanding</option>
+              <option value="consistency">Consistency</option>
+              <option value="exam-prep">Exam Prep</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-container">
+              <span>Allow AI to Adjust Plan Automatically</span>
+              <div class="toggle-wrapper">
+                <input type="checkbox" id="autoAdjust" name="autoAdjust" class="toggle-input">
+                <span class="toggle-slider"></span>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <div class="submit-section">
+          <button type="submit" class="submit-btn" id="submitBtn">
+            <span class="btn-text">Save My Preferences</span>
+            <span class="btn-loader" style="display:none;"><span class="spinner"></span> Saving...</span>
+          </button>
+        </div>
+
+        <div id="successMessage" class="success-message" style="display:none;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span>Your preferences have been saved successfully!</span>
+        </div>
+      </form>
+    </div>
+    <!-- end inserted form -->
+  </div>
+</div>
+
+<script>
+  function startManual() {
+    window.location.href = '/dashboard/?setup=manual';
+  }
+
+  function openModal(id) {
+    const m = document.getElementById(id);
+    if (!m) return;
+    m.style.display = 'block';
+    m.setAttribute('aria-hidden','false');
+    // close when clicking outside content
+    m.addEventListener('click', function onOutside(e) {
+      if (e.target === m) closeModal(id);
+    }, { once: true });
+  }
+
+  function closeModal(id) {
+    const m = document.getElementById(id);
+    if (!m) return;
+    m.style.display = 'none';
+    m.setAttribute('aria-hidden','true');
+  }
+
+  async function savePreferences() {
+  const data = {
+    fullName: document.getElementById("fullName").value,
+    educationLevel: document.getElementById("educationLevel").value,
+    currentYear: document.getElementById("currentYear").value,
+    subjects: ["Math", "Science"], // example
+    examGoal: document.getElementById("examGoal").value,
+    studyDays: ["Monday", "Tuesday"],
+    startTime: "10:00",
+    endTime: "14:00",
+    studyDuration: "4",
+    breakPreference: "Short breaks",
+    aiPlanFocus: "Math",
+    autoAdjust: true
+  };
+
+  const response = await fetch('/preferences', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+
+  const result = await response.json();
+  console.log(result);
+}
+
+</script>
+
+<!-- Load the same script.js used by index.html (must come after form DOM so it can bind) -->
+<script src="/static/js/option.js"></script>
+
+</body>
+</html>

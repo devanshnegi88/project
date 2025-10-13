@@ -12,7 +12,7 @@ def create_app():
     init_extensions(app)
 
     # Register blueprints
-    from app.auth import auth_bp
+    from app.auth.routes import auth_bp
     app.register_blueprint(auth_bp)
 
     from app.chatbot import chatbot_bp
@@ -37,6 +37,8 @@ def create_app():
     from app.reminders.routes import reminders_bp
     app.register_blueprint(reminders_bp)
 
+    from app.form.routes import preferences_bp
+    app.register_blueprint(preferences_bp)
 
     @app.route('/')
     

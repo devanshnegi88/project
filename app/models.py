@@ -7,6 +7,10 @@ progress_collection=db['progress']
 planner_collection = db["planner"]
 
 quizzes_collection = db["quizzes"]
+form_collection = db["form_collection"]
+study_sessions_col = db["study_sessions"]
+quiz_results_col = db["quiz_results"]
+tasks_col = db["tasks"]
 
 # from app.extensions import get_db
 # import sqlite3

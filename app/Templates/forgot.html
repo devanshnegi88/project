@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brainwave - Forgot Password</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+<style>
+  /* ===== Reset ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #e0f0ff, #ffffff);
+}
+
+/* ===== Auth Form Container ===== */
+.auth-form {
+  background: #ffffff;
+  padding: 40px 35px;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  transition: all 0.4s ease;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 0.6s forwards;
+}
+
+/* Animation for form entrance */
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Titles ===== */
+.login-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0d47a1;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.login-sub {
+  font-size: 14px;
+  color: #5a5a5a;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* ===== Form Groups ===== */
+.form-group {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 14px 15px;
+  border: 2px solid #d1d9ff;
+  border-radius: 12px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+  background: #f5f8ff;
+}
+
+.form-group input:focus {
+  border-color: #1565c0;
+  background: #e6f0ff;
+}
+
+.form-group label {
+  position: absolute;
+  top: 14px;
+  left: 15px;
+  font-size: 14px;
+  color: #9e9e9e;
+  pointer-events: none;
+  transition: 0.3s ease all;
+}
+
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label {
+  top: -10px;
+  left: 10px;
+  font-size: 12px;
+  color: #1565c0;
+  background: #ffffff;
+  padding: 0 5px;
+}
+
+/* ===== Buttons ===== */
+.btn-login,
+.google-btn,
+.forgot-box button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #1565c0;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-login:hover,
+.google-btn:hover,
+.forgot-box button:hover {
+  background: #0d47a1;
+}
+
+/* Google Button */
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+  background: #ffffff;
+  color: #1565c0;
+  border: 2px solid #1565c0;
+  font-weight: 500;
+}
+
+.google-btn img {
+  width: 22px;
+  height: 22px;
+}
+
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+  color: #9e9e9e;
+}
+
+.divider span {
+  flex-grow: 1;
+  position: relative;
+}
+
+.divider span::before,
+.divider span::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 1000px;
+  height: 1px;
+  background: #d1d9ff;
+}
+
+.divider span::before {
+  right: 100%;
+  margin-right: 10px;
+}
+
+.divider span::after {
+  left: 100%;
+  margin-left: 10px;
+}
+
+/* Extra Links */
+.extra-links {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.extra-links a {
+  color: #1565c0;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.extra-links a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Forgot Password Popup ===== */
+.forgot-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(13, 71, 161, 0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
+}
+
+.forgot-box {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 18px;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+}
+
+.forgot-box h3 {
+  color: #1565c0;
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+
+.forgot-box p {
+  font-size: 14px;
+  color: #5a5a5a;
+  margin-bottom: 20px;
+}
+
+.forgot-box input {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #d1d9ff;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  outline: none;
+  transition: all 0.3s ease;
+  background: #f5f8ff;
+}
+
+.forgot-box input:focus {
+  border-color: #1565c0;
+  background: #e6f0ff;
+}
+
+.close-forgot {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 26px;
+  font-weight: bold;
+  color: #1565c0;
+  cursor: pointer;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+</style>
+</head>
+<body>
+
+<!-- Forgot Password Form -->
+<div id="forgot-popup" class="forgot-popup">
+  <div class="forgot-box">
+    <h3>Forgot Password?</h3>
+    <p>Enter your email to receive a reset link.</p>
+
+    <!-- Form submits directly to backend -->
+    <form method="POST" action="{{ url_for('auth.forgot') }}">
+      <input type="email" name="email" placeholder="Email Address" required />
+      <button type="submit">Send Reset Link</button>
+    </form>
+
+    <div class="extra-links">
+      <p><a href="{{ url_for('auth.login') }}">Back to Login</a></p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

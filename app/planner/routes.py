@@ -1,87 +1,124 @@
-import json
-from flask import Blueprint, request, jsonify, render_template
-from app.models import planner_collection
-import google.generativeai as genai
+# backend_ai.py
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+from pymongo import MongoClient
+from bson.objectid import ObjectId
 
-from dotenv import load_dotenv
-import os
-import google.generativeai as genai
+# ----------------- Setup ----------------- #
+app = Flask(__name__)
+CORS(app)  # Allow cross-origin requests for frontend
 
-load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+# Connect to MongoDB (replace with your URI)
+client = MongoClient("mongodb://localhost:27017/")
+db = client["ai_study_planner"]
+subjects_col = db["subjects"]
 
-planner_bp = Blueprint("planner", __name__, url_prefix='/planner')
+# ----------------- Helper ----------------- #
+def serialize_subject(subj):
+    return {
+        "id": str(subj["_id"]),
+        "name": subj.get("name", ""),
+        "chapters": subj.get("chapters", 0),
+        "progress": subj.get("progress", 0),
+        "priority": subj.get("priority", "High"),
+        "color": subj.get("color", "#4F46E5")
+    }
 
-@planner_bp.route("/")
-def planner():
-    return render_template('planner.html')
+def priority_weight(priority):
+    if priority.lower() == "high":
+        return 1.5
+    elif priority.lower() == "medium":
+        return 1.0
+    else:
+        return 0.7
 
-# Save manual schedule to MongoDB
-@planner_bp.route("/save_manual_schedule", methods=["POST"])
-def save_manual_schedule():
-    data = request.json
-    schedule = data.get("schedule", {})
-    planner_collection.update_one(
-        {"_id": "manual_schedule"},
-        {"$set": {"schedule": schedule}},
-        upsert=True
-    )
-    return jsonify({"message": "Manual schedule saved successfully!"}), 200
-
-# Load manual schedule from MongoDB
-@planner_bp.route("/get_manual_schedule", methods=["GET"])
-def get_manual_schedule():
-    schedule = planner_collection.find_one({"_id": "manual_schedule"})
-    if not schedule:
-        return jsonify({}), 200
-    return jsonify(schedule.get("schedule", {})), 200
-
-# Clear manual schedule from MongoDB
-@planner_bp.route("/clear_manual_schedule", methods=["POST"])
-def clear_manual_schedule():
-    planner_collection.update_one(
-        {"_id": "manual_schedule"},
-        {"$set": {"schedule": {}}}
-    )
-    return jsonify({"message": "Manual schedule cleared!"}), 200
-
-# Generate AI schedule using Gemini and save to MongoDB
-@planner_bp.route("/generate_ai_schedule", methods=["POST"])
-def generate_ai_schedule():
-    data = request.json
-    subjects = data.get("subjects", [])
-    hours = data.get("hours", 1)
-
-    if not subjects or hours <= 0:
-        return jsonify({"error": "Invalid subjects or hours"}), 400
-
-    prompt = f"""
-    Create a weekly study schedule in plain text for a student who wants to study the following subjects: {', '.join(subjects)}.
-    The student has {hours} hours available per day.
-    Distribute study tasks intelligently from Monday to Sunday.
-    Output format:
-    Monday: task1, task2, ...
-    Tuesday: ...
-    Wednesday: ...
-    Thursday: ...
-    Friday: ...
-    Saturday: ...
-    Sunday: ...
-    """
-
+# ----------------- Dashboard Endpoint ----------------- #
+@app.route("/api/dashboard", methods=["GET"])
+def get_dashboard():
     try:
-        model = genai.GenerativeModel("gemini-2.5-flash-lite")
-        response = model.generate_content(prompt)
-        text_output = response.text
+        subjects = list(subjects_col.find())
+        if not subjects:
+            return jsonify({
+                "aiConfidence": 0,
+                "learningVelocity": 0,
+                "learningChange": 0,
+                "subjects": []
+            })
 
-        # Save the text schedule to MongoDB (optional)
-        planner_collection.update_one(
-            {"_id": "ai_schedule"},
-            {"$set": {"schedule_text": text_output}},
-            upsert=True
-        )
+        # ---- Weighted AI Confidence ---- #
+        total_weighted_progress = 0
+        total_weight = 0
+        for subj in subjects:
+            weight = priority_weight(subj.get("priority", "High"))
+            total_weighted_progress += subj.get("progress", 0) * weight
+            total_weight += weight
+        ai_confidence = round(total_weighted_progress / total_weight) if total_weight > 0 else 0
 
-        return jsonify({"schedule": text_output}), 200
+        # ---- Learning Velocity Prediction ---- #
+        # Velocity = avg progress per chapter, scaled by priority
+        velocity_sum = 0
+        for subj in subjects:
+            chapters = max(subj.get("chapters", 1), 1)
+            progress = subj.get("progress", 0)
+            weight = priority_weight(subj.get("priority", "High"))
+            velocity_sum += (progress / chapters) * weight * 5  # scaled 0-5
+        learning_velocity = round(velocity_sum / len(subjects), 1)
 
+        # ---- Learning Change ---- #
+        if not hasattr(app, "last_ai_confidence"):
+            app.last_ai_confidence = ai_confidence
+        learning_change = ai_confidence - app.last_ai_confidence
+        app.last_ai_confidence = ai_confidence
+
+        return jsonify({
+            "aiConfidence": ai_confidence,
+            "learningVelocity": learning_velocity,
+            "learningChange": learning_change,
+            "subjects": [serialize_subject(s) for s in subjects]
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# ----------------- Add Subject ----------------- #
+@app.route("/api/subjects/add", methods=["POST"])
+def add_subject():
+    data = request.json
+    name = data.get("name")
+    chapters = int(data.get("chapters", 0))
+    priority = data.get("priority", "High")
+    if not name or chapters <= 0:
+        return jsonify({"error": "Invalid data"}), 400
+    new_subject = {
+        "name": name,
+        "chapters": chapters,
+        "progress": 0,
+        "priority": priority,
+        "color": "#4F46E5"
+    }
+    result = subjects_col.insert_one(new_subject)
+    return jsonify({"success": True, "id": str(result.inserted_id)})
+
+# ----------------- Edit Subject ----------------- #
+@app.route("/api/subjects/edit/<id>", methods=["PUT"])
+def edit_subject(id):
+    data = request.json
+    name = data.get("name")
+    chapters = int(data.get("chapters", 0))
+    priority = data.get("priority", "High")
+    if not name or chapters <= 0:
+        return jsonify({"error": "Invalid data"}), 400
+    subjects_col.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"name": name, "chapters": chapters, "priority": priority}}
+    )
+    return jsonify({"success": True})
+
+# ----------------- Delete Subject ----------------- #
+@app.route("/api/subjects/delete/<id>", methods=["DELETE"])
+def delete_subject(id):
+    subjects_col.delete_one({"_id": ObjectId(id)})
+    return jsonify({"success": True})
+
+# ----------------- Run App ----------------- #
+
+    app.run(debug=True)
