@@ -3,7 +3,7 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>📘 Brainwave Dashboard</title>
+ <title>📘 Smart Study Planner</title>
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
  <style>
   body {
@@ -32,51 +32,48 @@
    flex-direction: column;
   }
 
-  /* Navbar */
-  .navbar {
-    background-color: #2563EB;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
-
-  .slidbtn {
-   display: inline-block;
-   z-index: 999;
-  }
-
-  .slidbtn button {
-   width: 40px;
-   height: 40px;
-   background-color: rgb(15, 16, 17);
-   color: white;
-   border: none;
-   cursor: pointer;
-   font-size: 20px;
-   border-radius: 5px;
-   transition: background 0.2s;
-  }
-
-  .slidbtn button:hover {
-   background-color: rgb(30, 30, 30);
-  }
-
-  .content {
-   padding: 20px;
-   transition: margin-left 0.4s ease-in-out;
-  }
-
   body.open .slider {
     transform: translateX(0);
   }
 
   body.open .content {
     margin-left: 200px;
+  }
+
+  /* Navbar */
+  .navbar {
+    background-color: #2563EB;
+    color: white;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: spa;
+    padding: 10px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .navbar h1 {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+    text-align: center;
+  }
+
+  .slidbtn button {
+    width: 40px;
+    height: 40px;
+    background-color: rgb(15, 16, 17);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    border-radius: 5px;
+    transition: background 0.2s;
+  }
+
+  .slidbtn button:hover {
+    background-color: rgb(30, 30, 30);
   }
 
   .menu button {
@@ -101,18 +98,18 @@
     transform: translateX(5px);
   }
 
-  .logout-btn {
-    background: #111;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 16px;
-    transition: background 0.3s ease;
+  .content {
+    padding: 20px;
+    transition: margin-left 0.4s ease-in-out;
   }
+  h1{
+    display: flex;
+    text-align: center;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 500px;
 
-  .logout-btn:hover {
-    background: #e63946;
+
   }
 
   /* Dashboard Cards */
@@ -139,142 +136,97 @@
     margin-top: 0.5rem;
   }
 
-  .text-3xl {
-    font-size: 1.875rem;
-  }
-
+  .text-3xl { font-size: 1.875rem; }
   .text-indigo-600 { color: #4f46e5; }
   .text-orange-500 { color: #f97316; }
   .text-purple-500 { color: #a855f7; }
   .text-green-500 { color: #22c55e; }
-
-  /* Upcoming Tasks */
-  .upcoming-task {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .upcoming-task span {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-  .bg-red-100 { background-color: #fee2e2; }
-  .text-red-500 { color: #ef4444; }
-  .bg-yellow-100 { background-color: #fef9c3; }
-  .text-yellow-500 { color: #eab308; }
-
-  main {
-    padding: 2rem;
-    margin-top: 1rem;
-  }
  </style>
 </head>
-
 <body>
 
-  <!-- Navbar -->
   <nav class="navbar">
     <div class="slidbtn">
       <button id="slider-btn" onclick="slidbar()">☰</button>
     </div>
-    <h1>📘 Brainwave Dashboard</h1>
-    <a href="/auth/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+  <h1 style="color:#f8f8f9; font-size:28px; font-weight:bold; text-align:center; margin-bottom:20px;">
+     📘Brainwave Dashboard
+</h1>
+
   </nav>
 
-  <!-- Sidebar -->
   <div class="slider" id="slider">
     <h2>Menu</h2>
     <div class="menu">
-      <button onclick="location.href='/dashboard/'"><i class="fa-solid fa-chart-line"></i> Dashboard</button><br>
-      <button onclick="location.href='/planner/'"><i class="fa-regular fa-calendar"></i> Planner</button><br>
-      <button onclick="location.href='/chatbot/'"><i class="fa-regular fa-message"></i> Chatbot</button><br>
-      <button onclick="location.href='/notes_summariser/summariser'"><i class="fa-solid fa-book"></i> Video to Notes</button><br>
-      <button onclick="location.href='/quiz/'"><i class="fa-solid fa-medal"></i> Quizzes</button><br>
-      <button onclick="location.href='/progress/'"><i class="fa-solid fa-arrow-trend-up"></i> Progress</button><br>
-      <button onclick="location.href='/auth/logout'"><i class="fa-solid fa-right-from-bracket"></i> Logout</button><br>
+      <button onclick="location.href='/dashboard/'"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+      <button onclick="location.href='/planner/'"><i class="fa-regular fa-calendar"></i> Planner</button>
+      <button onclick="location.href='/chatbot/'"><i class="fa-regular fa-message"></i> Chatbot</button>
+      <button onclick="location.href='/notes_summariser/summariser'">📘 Video to Notes</button>
+      <button onclick="location.href='/quiz/'"><i class="fa-solid fa-medal"></i> Quizzes</button>
+      <button onclick="location.href='/progress/'"><i class="fa-solid fa-arrow-trend-up"></i> Progress</button>
     </div>
   </div>
 
-  <!-- Dashboard Main -->
   <main class="content">
-    <!-- Cards -->
-    <div class="grid">
+    <div class="grid" id="dashboard-cards">
       <div>
         <h3>Today's Study Time</h3>
         <p id="study-time" class="text-3xl text-indigo-600">0m</p>
-        <p class="text-xs text-gray-400 mt-1" id="study-change">+0% from yesterday</p>
       </div>
       <div>
         <h3>Study Streak</h3>
         <p id="study-streak" class="text-3xl text-orange-500">0 🔥</p>
-        <p class="text-xs text-gray-400 mt-1">Keep it going!</p>
       </div>
       <div>
         <h3>Quizzes Done</h3>
         <p id="quizzes-done" class="text-3xl text-purple-500">0</p>
-        <p class="text-xs text-gray-400 mt-1">This week</p>
       </div>
       <div>
         <h3>Average Score</h3>
         <p id="average-score" class="text-3xl text-green-500">0%</p>
-        <p class="text-xs text-gray-400 mt-1">All time</p>
       </div>
     </div>
 
-    <!-- Chart and Upcoming -->
     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
-      <!-- Chart -->
       <div class="bg-white rounded-2xl shadow-md p-6">
         <h3 class="text-lg font-semibold mb-3 text-indigo-600">Weekly Study Progress</h3>
         <canvas id="studyChart"></canvas>
       </div>
-
-      <!-- Upcoming -->
       <div class="bg-white rounded-2xl shadow-md p-6">
-        <h3 class="text-lg font-semibold mb-4 text-orange-500">Upcoming</h3>
+        <h3 class="text-lg font-semibold mb-4 text-orange-500">Upcoming Tasks</h3>
         <ul class="space-y-3" id="upcoming-list"></ul>
-        <button class="w-full mt-5 bg-gradient-to-r from-orange-400 to-red-500 text-white py-2 rounded-xl font-semibold hover:shadow-lg transition-all">View All →</button>
       </div>
     </div>
   </main>
 
-  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <script>
-    // Sidebar toggle
     function slidbar() {
-      document.body.classList.toggle("open");
-      const sliderBtn = document.getElementById("slider-btn");
-      sliderBtn.style.display = document.body.classList.contains("open") ? "none" : "inline-block";
+      document.body.classList.toggle('open');
+      const sliderBtn = document.getElementById('slider-btn');
+      sliderBtn.style.display = document.body.classList.contains('open') ? 'none' : 'inline-block';
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-      const menuHeading = document.querySelector(".slider h2");
-      menuHeading.addEventListener("click", function() {
-        document.body.classList.remove("open");
-        document.getElementById("slider-btn").style.display = "inline-block";
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuHeading = document.querySelector('.slider h2');
+      menuHeading.addEventListener('click', function() {
+        document.body.classList.remove('open');
+        document.getElementById('slider-btn').style.display = 'inline-block';
       });
+      loadDashboardData();
     });
 
-    // Dynamic dashboard logic
     async function loadDashboardData() {
       try {
         const response = await fetch('/api/dashboard-data');
         const data = await response.json();
+        console.log("📊 Dashboard Data:", data);
 
-        // Update top cards
-        document.getElementById("study-time").textContent = data.studyTimeToday + "m";
-        document.getElementById("study-change").textContent = data.studyChange + "% from yesterday";
-        document.getElementById("study-streak").textContent = data.studyStreak + " 🔥";
-        document.getElementById("quizzes-done").textContent = data.quizzesDone;
-        document.getElementById("average-score").textContent = data.averageScore + "%";
+        document.getElementById('study-time').textContent = data.studyTimeToday + 'm';
+        document.getElementById('study-streak').textContent = data.studyStreak + ' 🔥';
+        document.getElementById('quizzes-done').textContent = data.quizzesDone;
+        document.getElementById('average-score').textContent = data.averageScore + '%';
 
-        // Update chart
         const ctx = document.getElementById('studyChart').getContext('2d');
         new Chart(ctx, {
           type: 'line',
@@ -284,7 +236,7 @@
               label: 'Study Minutes',
               data: data.weeklyProgress,
               borderColor: '#6366f1',
-              backgroundColor: 'rgba(99,102,241,0.1)',
+              backgroundColor: 'rgba(99,102,241,0.2)',
               tension: 0.4,
               fill: true
             }]
@@ -295,12 +247,11 @@
           }
         });
 
-        // Update upcoming
         const upcomingList = document.getElementById('upcoming-list');
-        upcomingList.innerHTML = "";
+        upcomingList.innerHTML = '';
         data.upcomingTasks.forEach(task => {
           const li = document.createElement('li');
-          li.className = "upcoming-task";
+          li.className = 'upcoming-task';
           li.innerHTML = `
             <div>
               <p class="font-medium text-gray-700">${task.task}</p>
@@ -315,8 +266,6 @@
         console.error('Error loading data:', err);
       }
     }
-
-    document.addEventListener('DOMContentLoaded', loadDashboardData);
   </script>
 </body>
 </html>

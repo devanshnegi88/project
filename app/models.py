@@ -11,6 +11,10 @@ form_collection = db["form_collection"]
 study_sessions_col = db["study_sessions"]
 quiz_results_col = db["quiz_results"]
 tasks_col = db["tasks"]
+subjects_col = db["subjects"]
+
+tasks_collection = db['tasks']
+quizzes_collection = db['quizzes']
 
 # from app.extensions import get_db
 # import sqlite3

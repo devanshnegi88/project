@@ -1,116 +1,78 @@
-from flask import Flask, jsonify, render_template, redirect, url_for, session,Blueprint
-from flask_pymongo import PyMongo
-from app.models import users_collection,study_sessions_col,quiz_results_col,tasks_col
-from bson.objectid import ObjectId
-from datetime import datetime, timedelta, date
+from flask import jsonify, Blueprint, render_template
+from bson import ObjectId
+from datetime import datetime, timedelta
+from app.models import users_collection, tasks_collection, quizzes_collection
 
-dashboard_bp = Blueprint('dashboard', __name__,url_prefix='/dashboard')
-
-# ---------------------------
-# 🔗 MongoDB Configuration
-# ---------------------------
-# Replace with your MongoDB connection string:
-
-
-# ------------------------------------------------------------
-# AUTH ROUTES (for demo; you can replace with your real auth)
-# ------------------------------------------------------------
-
-
-
-# ------------------------------------------------------------
-# DASHBOARD PAGE
-# ------------------------------------------------------------
-@dashboard_bp.route("/")
-def home():
+dashboard_bp = Blueprint('dashboard', __name__,url_prefix='/api')
+@dashboard_bp.route('/')
+def dashboard():
     return render_template('dashboard.html')
 
-@dashboard_bp.route("/dashboard/")
-def dashboard():
-    if "user_id" not in session:
-        return redirect(url_for("auth.login"))
-    return render_template("dashboard.html")
-
-
-# ------------------------------------------------------------
-# 📊 REAL DASHBOARD DATA API (MongoDB based)
-# ------------------------------------------------------------
-@dashboard_bp.route("/api/dashboard-data")
+@dashboard_bp.route('/dashboard-data')
 def dashboard_data():
-    if "user_id" not in session:
-        return jsonify({"error": "Unauthorized"}), 401
+    # Use your actual user ObjectId
+    user_id = ObjectId("68ec90bf4699cec6b75a735e")
 
-    user_id = ObjectId(session["user_id"])
-    today = date.today()
-    yesterday = today - timedelta(days=1)
-    week_start = today - timedelta(days=today.weekday())
+    # Fetch user document
+    user = users_collection.find_one({'_id': user_id})
+    if not user:
+        return jsonify({"error": "User not found"}), 404
 
-    # --- STUDY TIME (Today & Yesterday) ---
-    today_sessions = list(study_sessions_col.find({"user_id": user_id, "date": today.isoformat()}))
-    study_time_today = sum(s.get("duration", 0) for s in today_sessions)
+    # Dates as ISO strings
+    today = datetime.now().date()
+    today_str = today.isoformat()
+    yesterday_str = (today - timedelta(days=1)).isoformat()
 
-    yesterday_sessions = list(study_sessions_col.find({"user_id": user_id, "date": yesterday.isoformat()}))
-    study_time_yesterday = sum(s.get("duration", 0) for s in yesterday_sessions)
+    # Study time today
+    study_time_today = user.get('study_time', {}).get(today_str, 0)
 
-    study_change = 0
-    if study_time_yesterday > 0:
-        study_change = round(((study_time_today - study_time_yesterday) / study_time_yesterday) * 100, 1)
+    # Change from yesterday
+    study_yesterday = user.get('study_time', {}).get(yesterday_str, 0)
+    study_change = ((study_time_today - study_yesterday) / study_yesterday * 100) if study_yesterday else 100
 
-    # --- STREAK CALCULATION ---
-    streak = 0
-    for i in range(7):
-        d = today - timedelta(days=i)
-        has_study = study_sessions_col.find_one({"user_id": user_id, "date": d.isoformat()})
-        if has_study:
-            streak += 1
-        else:
-            break
+    # Study streak
+    study_streak = user.get('study_streak', 0)
 
-    # --- QUIZZES DONE (This week) ---
-    quizzes = list(quiz_results_col.find({
-        "user_id": user_id,
-        "date": {"$gte": week_start.isoformat()}
-    }))
-    quizzes_done = len(quizzes)
-    average_score = round(sum(q.get("score", 0) for q in quizzes) / quizzes_done, 2) if quizzes_done else 0
+    # Quizzes done this week
+    week_start_str = (today - timedelta(days=today.weekday())).isoformat()
+    quizzes_done = quizzes_collection.count_documents({
+    'user_id': str(user_id),
+    'date': {'$gte': week_start_str}
+})
+    
 
-    # --- WEEKLY PROGRESS (Mon–Sun) ---
+    # Average score
+    quiz_scores_cursor = quizzes_collection.find({'user_id': str(user_id)}, {'score': 1})
+    quiz_scores = [q.get('score', 0) for q in quiz_scores_cursor]
+    average_score = round(sum(quiz_scores) / len(quiz_scores), 2) if quiz_scores else 0
+
+    # Weekly progress (last 7 days)
     weekly_progress = []
     for i in range(7):
-        d = week_start + timedelta(days=i)
-        sessions = list(study_sessions_col.find({"user_id": user_id, "date": d.isoformat()}))
-        total = sum(s.get("duration", 0) for s in sessions)
-        weekly_progress.append(total)
+        day_str = (today - timedelta(days=6-i)).isoformat()
+        weekly_progress.append(user.get('study_time', {}).get(day_str, 0))
 
-    # --- UPCOMING TASKS ---
-    tasks = list(tasks_col.find({
-        "user_id": user_id,
-        "date": {"$gte": today.isoformat()}
-    }).sort("date", 1).limit(5))
+    # Upcoming tasks (next 5)
+    upcoming_tasks_cursor = tasks_collection.find({
+        'user_id': str(user_id),
+        'date': {'$gte': today_str}
+    }).sort('date', 1).limit(5)
 
-    upcoming_tasks = [{
-        "task": t["task"],
-        "date": t["date"],
-        "priority": t.get("priority", "medium")
-    } for t in tasks]
+    upcoming_tasks = []
+    for t in upcoming_tasks_cursor:
+        upcoming_tasks.append({
+            'task': t.get('task_name', 'No Name'),
+            'date': t.get('date', today_str),
+            'priority': t.get('priority', 'low')
+        })
 
-    # --- COMPILE RESPONSE ---
-    data = {
-        "studyTimeToday": study_time_today,
-        "studyChange": study_change,
-        "studyStreak": streak,
-        "quizzesDone": quizzes_done,
-        "averageScore": average_score,
-        "weeklyProgress": weekly_progress,
-        "upcomingTasks": upcoming_tasks
-    }
-
-    return jsonify(data)
-
-
-
-
-
-# ------------------------------------------------------------
-# 🚀 RUN SERVER
-# ------------------------------------------------------------
+    # Return JSON
+    return jsonify({
+        'studyTimeToday': study_time_today,
+        'studyChange': round(study_change, 2),
+        'studyStreak': study_streak,
+        'quizzesDone': quizzes_done,
+        'averageScore': average_score,
+        'weeklyProgress': weekly_progress,
+        'upcomingTasks': upcoming_tasks
+    })

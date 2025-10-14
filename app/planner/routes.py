@@ -1,124 +1,79 @@
-# backend_ai.py
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-from pymongo import MongoClient
+from flask import Blueprint, jsonify, render_template
+from app.models import users_collection, study_sessions_col, quizzes_collection, tasks_collection
 from bson.objectid import ObjectId
+from datetime import datetime, timedelta
 
-# ----------------- Setup ----------------- #
-app = Flask(__name__)
-CORS(app)  # Allow cross-origin requests for frontend
+planner_bp = Blueprint('planner', __name__, url_prefix='/planner')
 
-# Connect to MongoDB (replace with your URI)
-client = MongoClient("mongodb://localhost:27017/")
-db = client["ai_study_planner"]
-subjects_col = db["subjects"]
+@planner_bp.route('/')
+def dashboard_page():
+    return render_template('planner.html')
 
-# ----------------- Helper ----------------- #
-def serialize_subject(subj):
-    return {
-        "id": str(subj["_id"]),
-        "name": subj.get("name", ""),
-        "chapters": subj.get("chapters", 0),
-        "progress": subj.get("progress", 0),
-        "priority": subj.get("priority", "High"),
-        "color": subj.get("color", "#4F46E5")
-    }
+@planner_bp.route('/dashboard-data')
+def dashboard_data():
+    user_id = ObjectId("68ec90bf4699cec6b75a735e")
+    today = datetime.now().date()
+    week_start = today - timedelta(days=today.weekday())
 
-def priority_weight(priority):
-    if priority.lower() == "high":
-        return 1.5
-    elif priority.lower() == "medium":
-        return 1.0
-    else:
-        return 0.7
+    user = users_collection.find_one({'_id': user_id})
+    if not user:
+        return jsonify({"error": "User not found"}), 404
 
-# ----------------- Dashboard Endpoint ----------------- #
-@app.route("/api/dashboard", methods=["GET"])
-def get_dashboard():
-    try:
-        subjects = list(subjects_col.find())
-        if not subjects:
-            return jsonify({
-                "aiConfidence": 0,
-                "learningVelocity": 0,
-                "learningChange": 0,
-                "subjects": []
-            })
+    # --- AI confidence ---
+    study_sessions = list(study_sessions_col.find({'user_id': user_id}))
+    total_topics = sum(s.get('total_topics', 0) for s in study_sessions)
+    completed_topics = sum(s.get('topics_completed', 0) for s in study_sessions)
+    ai_confidence = round((completed_topics / total_topics) * 100, 1) if total_topics else 0
 
-        # ---- Weighted AI Confidence ---- #
-        total_weighted_progress = 0
-        total_weight = 0
-        for subj in subjects:
-            weight = priority_weight(subj.get("priority", "High"))
-            total_weighted_progress += subj.get("progress", 0) * weight
-            total_weight += weight
-        ai_confidence = round(total_weighted_progress / total_weight) if total_weight > 0 else 0
+    # --- Learning velocity ---
+    weekly_hours = []
+    for i in range(7):
+        day = today - timedelta(days=6-i)
+        hours = sum(s.get('duration', 0) for s in study_sessions if s.get('date') == day.isoformat())
+        weekly_hours.append(hours)
+    learning_velocity = round(sum(weekly_hours)/7, 1)
 
-        # ---- Learning Velocity Prediction ---- #
-        # Velocity = avg progress per chapter, scaled by priority
-        velocity_sum = 0
-        for subj in subjects:
-            chapters = max(subj.get("chapters", 1), 1)
-            progress = subj.get("progress", 0)
-            weight = priority_weight(subj.get("priority", "High"))
-            velocity_sum += (progress / chapters) * weight * 5  # scaled 0-5
-        learning_velocity = round(velocity_sum / len(subjects), 1)
+    # --- Subjects overview ---
+    subjects_dict = {}
+    for s in study_sessions:
+        subj = s.get('subject', 'Unknown')
+        if subj not in subjects_dict:
+            subjects_dict[subj] = {'name': subj, 'priority': 'Medium', 'topics_completed': 0, 'total_topics': 0, 'hours': 0}
+        subjects_dict[subj]['topics_completed'] += s.get('topics_completed', 0)
+        subjects_dict[subj]['total_topics'] += s.get('total_topics', 0)
+        subjects_dict[subj]['hours'] += s.get('duration', 0)
+    subjects = []
+    for subj_data in subjects_dict.values():
+        progress = round((subj_data['topics_completed']/subj_data['total_topics'])*100, 1) if subj_data['total_topics'] else 0
+        subj_data['progress'] = progress
+        subjects.append(subj_data)
 
-        # ---- Learning Change ---- #
-        if not hasattr(app, "last_ai_confidence"):
-            app.last_ai_confidence = ai_confidence
-        learning_change = ai_confidence - app.last_ai_confidence
-        app.last_ai_confidence = ai_confidence
+    # --- Quizzes done and average score ---
+    week_quizzes = list(quizzes_collection.find({
+        'user_id': user_id,
+        'date': {'$gte': week_start.isoformat()}
+    }))
+    quizzes_done = len(week_quizzes)
+    average_score = round(sum(q['score'] for q in week_quizzes)/quizzes_done, 2) if quizzes_done else 0
 
-        return jsonify({
-            "aiConfidence": ai_confidence,
-            "learningVelocity": learning_velocity,
-            "learningChange": learning_change,
-            "subjects": [serialize_subject(s) for s in subjects]
+    # --- Upcoming tasks (next 7 days) ---
+    upcoming_tasks_cursor = tasks_collection.find({
+        'user_id': user_id,
+        'date': {'$gte': today.isoformat()}
+    }).sort('date', 1)
+    upcoming_tasks = []
+    for t in upcoming_tasks_cursor:
+        upcoming_tasks.append({
+            'task': t.get('task'),
+            'date': t.get('date'),
+            'priority': t.get('priority', 'Medium')
         })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
-# ----------------- Add Subject ----------------- #
-@app.route("/api/subjects/add", methods=["POST"])
-def add_subject():
-    data = request.json
-    name = data.get("name")
-    chapters = int(data.get("chapters", 0))
-    priority = data.get("priority", "High")
-    if not name or chapters <= 0:
-        return jsonify({"error": "Invalid data"}), 400
-    new_subject = {
-        "name": name,
-        "chapters": chapters,
-        "progress": 0,
-        "priority": priority,
-        "color": "#4F46E5"
-    }
-    result = subjects_col.insert_one(new_subject)
-    return jsonify({"success": True, "id": str(result.inserted_id)})
-
-# ----------------- Edit Subject ----------------- #
-@app.route("/api/subjects/edit/<id>", methods=["PUT"])
-def edit_subject(id):
-    data = request.json
-    name = data.get("name")
-    chapters = int(data.get("chapters", 0))
-    priority = data.get("priority", "High")
-    if not name or chapters <= 0:
-        return jsonify({"error": "Invalid data"}), 400
-    subjects_col.update_one(
-        {"_id": ObjectId(id)},
-        {"$set": {"name": name, "chapters": chapters, "priority": priority}}
-    )
-    return jsonify({"success": True})
-
-# ----------------- Delete Subject ----------------- #
-@app.route("/api/subjects/delete/<id>", methods=["DELETE"])
-def delete_subject(id):
-    subjects_col.delete_one({"_id": ObjectId(id)})
-    return jsonify({"success": True})
-
-# ----------------- Run App ----------------- #
-
-    app.run(debug=True)
+    return jsonify({
+        "ai_confidence": ai_confidence,
+        "learning_velocity": learning_velocity,
+        "subjects": subjects,
+        "quizzes_done": quizzes_done,
+        "average_score": average_score,
+        "upcoming_tasks": upcoming_tasks
+    })

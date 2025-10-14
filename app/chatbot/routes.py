@@ -10,8 +10,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 chatbot_bp = Blueprint("chatbot", __name__, url_prefix="/chatbot")
 
 # ✅ Configure Gemini API securely (do not expose in frontend)
-GEMINI_API_KEY = "AIzaSyBLZZY8iaMu6Hkz9SEknSAF7qrCc4kdnAE"
-genai.configure(api_key=GEMINI_API_KEY)
+
 
 
 @chatbot_bp.route("/")
