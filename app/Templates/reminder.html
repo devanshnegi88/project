@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>📅 Task Reminder Dashboard</title>
+  <link rel="stylesheet" href="/static/css/reminder.css">
+  <script src="/static/js/reminder.js"></script>
+
+</head>
+<body>
+
+  <!-- Navbar -->
+  <section>
+    <nav class="navbar bg-body-tertiary">
+      <div class="slidbtn">
+        <button id="slider-btn" onclick="slidbar()">☰</button>
+      </div>
+      <a href="/auth/logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+  </section>
+
+  <!-- Sidebar -->
+  <div class="slider" id="slider">
+    <h2>Menu</h2>
+    <div class="menu">
+      <button onclick="location.href='/'">Home</button><br>
+      <button onclick="location.href='/dashboard/'">Dashboard</button><br>
+      <button onclick="location.href='/chatbot/chatbot'">AI Chatbot</button><br>
+      <button onclick="location.href='/quiz/quiz'">AI Quizzes</button><br>
+      <button onclick="location.href='/notes/notes'">Notes Summariser</button><br>
+      <button onclick="location.href='/reminders'">Reminder</button><br>
+      <button onclick="location.href='progress/'">Progress</button><br>
+    </div>
+  </div>
+
+  <!-- Reminder Section -->
+  <div class="reminder-container">
+    <h2>Add New Task</h2>
+    <input type="text" id="task-title" placeholder="Task Title">
+    <textarea id="task-desc" placeholder="Task Description (optional)"></textarea>
+    <input type="datetime-local" id="task-deadline">
+    <button onclick="addTask()">➕ Add Task</button>
+
+    <!-- Reminders Table -->
+    <table class="reminder-table" id="reminderTable">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Deadline</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="reminderTableBody">
+        <tr><td colspan="3" id="no-tasks-msg">No reminders yet</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+
+
+</body>
+</html>
