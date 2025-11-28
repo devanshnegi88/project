@@ -292,10 +292,14 @@
 document.getElementById("preferencesForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    // Get subjects from added-subjects
+    const subjects = Array.from(document.querySelectorAll('.added-subjects input[name="subjects"]')).map(input => input.value);
+
     const data = {
         fullName: document.getElementById("fullName").value,
         educationLevel: document.getElementById("educationLevel").value,
         currentYear: document.getElementById("currentYear").value,
+        subjects: subjects,
         examGoal: document.getElementById("examGoal").value,
         studyDays: Array.from(document.querySelectorAll("input[name='studyDays']:checked")).map(el => el.value),
         startTime: document.getElementById("startTime").value,
@@ -310,7 +314,7 @@ document.getElementById("preferencesForm").addEventListener("submit", async (e) 
     document.querySelector(".btn-loader").style.display = "inline-flex";
 
     try {
-        const response = await fetch("http://127.0.0.1:5000/preferences", {
+        const response = await fetch("/preferences", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
@@ -322,13 +326,19 @@ document.getElementById("preferencesForm").addEventListener("submit", async (e) 
         document.querySelector(".btn-loader").style.display = "none";
 
         if (result.success) {
-            document.getElementById("successMessage").style.display = "flex";
+            if (result.redirect) {
+                window.location.href = result.redirect;
+            } else {
+                document.getElementById("successMessage").style.display = "flex";
+            }
         } else {
             alert(result.message || "Something went wrong");
         }
     } catch (error) {
         console.error(error);
         alert("Error connecting to server");
+        document.querySelector(".btn-text").style.display = "inline";
+        document.querySelector(".btn-loader").style.display = "none";
     }
 });
 
