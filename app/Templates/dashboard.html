@@ -308,7 +308,7 @@
     <div>
       <h2>Menu</h2>
       <div class="menu">
-        <button class="nav-btn" onclick="location.href='/dashboard'"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+        <button class="nav-btn" onclick="location.href='/api'"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
       <button class="nav-btn" onclick="location.href='/planner'"><i class="fa-regular fa-calendar"></i> Planner</button>
       <button class="nav-btn" onclick="location.href='/chatbot'"><i class="fa-regular fa-message"></i> Chatbot</button>
       <button class="nav-btn" onclick="location.href='/notes_sumariser'"><i class="fa-solid fa-book"></i> Video to Notes</button>
@@ -396,7 +396,7 @@
     let studyChart;
     async function loadDashboardData(){
       try{
-        const res = await fetch("/dashboard/dashboard-data");
+        const res = await fetch("/api/dashboard-data");
         const data = await res.json();
 
         document.getElementById("study-time").textContent = data.studyTimeToday + "m";

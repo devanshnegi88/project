@@ -29,7 +29,7 @@ def init_extensions(app):
     global client, db, mail
     
     # Configure MongoDB
-    client = MongoClient("mongodb+srv://devanshn180_db_user:DAoJL39YEYekEvWX@cluster0.njdxavv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    client = MongoClient("mongodb+srv://devanshn180_db_user:FkbFeDStf4-RK4G@cluster0.njdxavv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
     db = client['study']   # Replace with your database name
     
     # Configure Flask-Mail for Gmail

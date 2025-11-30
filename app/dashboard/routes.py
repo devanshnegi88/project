@@ -3,12 +3,15 @@ from bson import ObjectId
 from datetime import datetime, timedelta
 from app.models import users_collection, tasks_collection, quizzes_collection, study_sessions_col, reminders_collection
 
-dashboard_bp = Blueprint('dashboard', __name__,url_prefix='/dashboard')
+dashboard_bp = Blueprint('dashboard', __name__,url_prefix='/api')
 
 
 def compute_stats(user_id):
+    # Convert ObjectId to string for querying
+    user_id_str = str(user_id)
+    
     # Quizzes
-    quizzes = list(quizzes_collection.find({'user_id': user_id}))
+    quizzes = list(quizzes_collection.find({'user_id': user_id_str}))
     if not quizzes:
         return {'ai_confidence': 0, 'learning_velocity': '0x', 'subjects': []}
 
@@ -29,7 +32,7 @@ def compute_stats(user_id):
     ai_confidence = round(sum(all_scores) / len(all_scores), 0)
 
     # Study Sessions → learning velocity
-    sessions = list(study_sessions_col.find({'user_id': user_id}))
+    sessions = list(study_sessions_col.find({'user_id': user_id_str}))
     total_topics = sum(s.get('topics_completed', 0) for s in sessions)
     total_time = sum(s.get('duration', 0) for s in sessions) / 60  # mins → hrs
     velocity = round((total_topics / total_time), 2) if total_time > 0 else 0
@@ -173,12 +176,42 @@ def dashboard_data():
 
    
 
-@dashboard_bp.route('/api/update-study-time', methods=['POST'])
+@dashboard_bp.route('/update-study-time', methods=['POST'])
 def update_study_time():
+    # Get user_id from session
+    user_id_str = None
+    if 'user_id' in session:
+        user_id_str = session['user_id']
+    elif 'user' in session and isinstance(session['user'], dict) and session['user'].get('id'):
+        user_id_str = session['user'].get('id')
+    
+    if not user_id_str:
+        return jsonify({"error": "User not logged in"}), 401
+    
     data = request.get_json()
     seconds = data.get('seconds', 0)
-    # update user's study time in DB here
-    return jsonify({"status": "success", "seconds_received": seconds})
+    minutes = seconds // 60
+    
+    # Convert to ObjectId
+    try:
+        user_id = ObjectId(user_id_str)
+    except:
+        return jsonify({"error": "Invalid user id"}), 400
+    
+    # Get today's date as ISO string
+    today_str = datetime.now().date().isoformat()
+    
+    # Update user's study_time for today
+    users_collection.update_one(
+        {'_id': user_id},
+        {
+            '$inc': {f'study_time.{today_str}': minutes},
+            '$set': {'last_study_time': datetime.utcnow()}
+        },
+        upsert=False
+    )
+    
+    return jsonify({"status": "success", "minutes_recorded": minutes})
 
 
 

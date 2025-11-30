@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, session
 from app.models import form_collection
 
 preferences_bp = Blueprint('preferences', __name__)
@@ -48,13 +48,5 @@ def save_preferences():
     })
 
     print("🟢 Inserted document ID:", result.inserted_id)
-    
-    # Redirect to assessment quiz for the first subject
-    if subjects:
-        return jsonify({
-            "success": True,
-            "redirect": f"/quiz/assessment?subject={subjects[0]}"
-        })
-    return jsonify({"success": True})
 
     return jsonify({"success": True, "message": "Preferences saved successfully!"})

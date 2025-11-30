@@ -218,24 +218,43 @@
       data.subjectsAndGoals.confidenceLevels[subject] = parseInt(slider.value);
     });
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Send preferences to backend
+    try {
+      const response = await fetch('/preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
 
-    // Log data to console
-    console.log('=== AI STUDY PREFERENCES ===');
-    console.log(JSON.stringify(data, null, 2));
-    console.log('===========================');
+      const result = await response.json();
 
-    // Show success state
-    if (btnLoader) btnLoader.style.display = 'none';
-    if (btnText) btnText.style.display = 'inline';
-    if (submitBtn) submitBtn.disabled = false;
-    if (successMessage) {
-      successMessage.style.display = 'flex';
-      successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => {
-        successMessage.style.display = 'none';
-      }, 5000);
+      // Show success state
+      if (btnLoader) btnLoader.style.display = 'none';
+      if (btnText) btnText.style.display = 'inline';
+      if (submitBtn) submitBtn.disabled = false;
+
+      if (result.success) {
+        // Get selected subjects for the quiz
+        const subjects = data.subjectsAndGoals.subjects;
+        if (subjects && subjects.length > 0) {
+          // Redirect to assessment quiz with first subject
+          const firstSubject = encodeURIComponent(subjects[0]);
+          window.location.href = `/quiz/assessment?subject=${firstSubject}`;
+        } else {
+          alert('Please select at least one subject');
+        }
+      } else {
+        alert(result.message || 'Failed to save preferences');
+        if (successMessage) {
+          successMessage.style.display = 'none';
+        }
+      }
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      if (btnLoader) btnLoader.style.display = 'none';
+      if (btnText) btnText.style.display = 'inline';
+      if (submitBtn) submitBtn.disabled = false;
+      alert('Error connecting to server');
     }
   });
 
@@ -326,10 +345,12 @@ document.getElementById("preferencesForm").addEventListener("submit", async (e) 
         document.querySelector(".btn-loader").style.display = "none";
 
         if (result.success) {
-            if (result.redirect) {
-                window.location.href = result.redirect;
+            // Redirect to assessment quiz with first subject
+            if (subjects && subjects.length > 0) {
+                const firstSubject = encodeURIComponent(subjects[0]);
+                window.location.href = `/quiz/assessment?subject=${firstSubject}`;
             } else {
-                document.getElementById("successMessage").style.display = "flex";
+                alert('Please select at least one subject');
             }
         } else {
             alert(result.message || "Something went wrong");
